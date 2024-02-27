@@ -202,9 +202,9 @@ class Simulation{
       s.update();
     }
     //make first partucle move along spline
-    let t_norm =(Math.cos(t*0.3) + 1)/2;
-    this.particles[0].position = this.spline.get_position(t_norm);
-    for (let i  = 1; i < this.particles.length; i++){ //update function of particles
+    // let t_norm =(Math.cos(t*0.3) + 1)/2;
+    // this.particles[0].position = this.spline.get_position(t_norm);
+    for (let i  = 0; i < this.particles.length; i++){ //update function of particles
       let p  = this.particles[i];
 
       p.update(dt, this.integration_method);
@@ -389,13 +389,11 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.simulation.set_particle(0, vec3(1, 9, 0),
           vec3(0, 0, 0) 
           , 5);
-        console.log(this.simulation.particles[0])
         for (let i = 1; i < 9; i++){
           this.simulation.set_particle(i, 
             vec3(1, 9-0.3*i, 0)
             , vec3(0, 0, 0), 2);
         }
-        console.log("particles: ",this.simulation.particles)
         this.simulation.create_springs(8);
         for (let i = 0; i < 8; i++){
           this.simulation.springs[i].link(
@@ -517,30 +515,6 @@ export class Part_three_chain extends Part_three_chain_base
     // buttons with key bindings for affecting this scene, and live info readouts.
     this.control_panel.innerHTML += "Part Three: (no buttons)";
     this.new_line();
-    
-
-    /* Some code for your reference
-    this.key_triggered_button( "Copy input", [ "c" ], function() {
-      let text = document.getElementById("input").value;
-      console.log(text);
-      document.getElementById("output").value = text;
-    } );
-    this.new_line();
-    this.key_triggered_button( "Relocate", [ "r" ], function() {
-      let text = document.getElementById("input").value;
-      const words = text.split(' ');
-      if (words.length >= 3) {
-        const x = parseFloat(words[0]);
-        const y = parseFloat(words[1]);
-        const z = parseFloat(words[2]);
-        this.ball_location = vec3(x, y, z)
-        document.getElementById("output").value = "success";
-      }
-      else {
-        document.getElementById("output").value = "invalid input";
-      }
-    } );
-     */
   }
 
 
