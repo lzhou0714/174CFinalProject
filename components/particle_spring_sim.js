@@ -9,6 +9,7 @@ export class Particle {
       this.old_position = vec3(0, 0, 0);
       this.velocity = vec3(0, 0, 0);
       this.net_force = vec3(0, 0, 0);
+      this.collided = false;
     }
   
     set(input_mass, x, y, z, vx, vy, vz) {
@@ -192,15 +193,21 @@ export class Simulation {
       }
     }
 
-    advance_frame_part3(delta_t, spline) {
-      // How many steps of delta_t to do per frame
-      const num_samples = 1/delta_t/30;
+    // advance_frame_part3(delta_t, spline) {
+    //   // How many steps of delta_t to do per frame
+    //   const num_samples = 1/delta_t/30;
   
-      for (let i = 0; i < num_samples; i++) {
-        this.time += delta_t;
-        const top_particle_position = spline.get_position((Math.sin((this.time - Math.PI)/3.0) + 1)/2.0);
-        this.particles[0].set_position(top_particle_position[0], top_particle_position[1], top_particle_position[2]);
-        this.advance_time_step(delta_t, this.particles[0]); 
-      }
+    //   for (let i = 0; i < num_samples; i++) {
+    //     this.time += delta_t;
+    //     const top_particle_position = spline.get_position((Math.sin((this.time - Math.PI)/3.0) + 1)/2.0);
+    //     this.particles[0].set_position(top_particle_position[0], top_particle_position[1], top_particle_position[2]);
+    //     this.advance_time_step(delta_t, this.particles[0]); 
+    //   }
+    // }
+    move_particle(delta_t, delta_x, delta_z){
+      this.particles[0].set_position(this.particles[0].position[0] + delta_x, 
+        this.particles[0].position[1], 
+        this.particles[0].position[2] + delta_z);
+      this.advance_time_step(delta_t, this.particles[0]);
     }
   }

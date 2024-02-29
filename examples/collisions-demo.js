@@ -119,6 +119,27 @@ class Simulation extends Component
       let alpha = this.time_accumulator / this.dt;
       for( let b of this.bodies ) b.blend_state( alpha );
     }
+    addHoldKey(key, callback, name, interval = 100) {
+      this.key_triggered_button(name, [key], () => {});
+  
+      window.setInterval(() => {
+        if (this.keyListeners[name]) {
+          callback();
+        }
+      }, interval);
+  
+      document.addEventListener('keydown', (e) => {
+        if (e.key === key) {
+          this.keyListeners[name] = true;
+        }
+      });
+  
+      document.addEventListener('keyup', (e) => {
+        if (e.key == key) {
+          this.keyListeners[name] = false;
+        }
+      });
+    }
   render_controls()
     {                       // render_controls(): Create the buttons for interacting with simulation time.
       this.key_triggered_button( "Speed up time", [ "Shift","T" ], () => this.time_scale *= 5           );

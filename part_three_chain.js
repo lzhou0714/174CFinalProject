@@ -97,7 +97,9 @@ const Part_three_chain_base = defs.Part_three_chain_base =
 
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if( !caller.controls )
-        { this.animated_children.push( caller.controls = new defs.Movement_Controls( { uniforms: this.uniforms } ) );
+        { this.animated_children.push( 
+          caller.controls = new defs.Movement_Controls( { uniforms: this.uniforms } ) 
+          );
           caller.controls.add_mouse_controls( caller.canvas );
 
           // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
@@ -181,11 +183,101 @@ export class Part_three_chain extends Part_three_chain_base
     this.sim.advance_frame_part3(this.sim.time_step, this.spline);
   }
 
+  addHoldKey(key, callback, name, interval = 100) {
+		this.key_triggered_button(name, [key], () => {});
+
+		window.setInterval(() => {
+			if (this.keyListeners[name]) {
+				callback();
+			}
+		}, interval);
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === key) {
+				this.keyListeners[name] = true;
+			}
+		});
+
+		document.addEventListener('keyup', (e) => {
+			if (e.key == key) {
+				this.keyListeners[name] = false;
+			}
+		});
+	}
+
   render_controls()
   {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
     // buttons with key bindings for affecting this scene, and live info readouts.
     this.control_panel.innerHTML += "Part Three: (no buttons)";
     this.new_line();
+    this.addHoldKey(
+			'w', //move in z direction
+			() => {
+					this.spline.move_particle(this.sim.time_step, 0.1, 0);
+
+				// } else {
+				// 	// this.vely = this.vely > 0.03 ? 0.03 : this.vely;
+				// }
+			},
+
+			'up',
+			125
+		);
+
+		this.addHoldKey(
+			's',
+			() => {
+          this.spline.move_particle(this.sim.time_step, -0.1, 0);
+			},
+			'down',
+			125
+		);
+		this.addHoldKey(
+			'd',
+			() => {
+          this.spline.move_particle(this.sim.time_step, 0, -0.1);
+				// this.rotx -=
+				// 	(Math.PI / 24) *
+				// 	(1 - 1.5 * this.vely) *
+				// 	(1 + this.turnBuffer);
+				// if (this.vely > 0) {
+				// 	this.vely -= 0.00075;
+				// 	if (this.vely < 0) {
+				// 		this.vely = 0;
+				// 	}
+				// } else if (this.vely < 0) {
+				// 	this.vely += 0.00075;
+				// 	if (this.vely > 0) {
+				// 		this.vely = 0;
+				// 	}
+				// }
+			},
+			'left',
+			125
+		);
+		this.addHoldKey(
+			'a',
+			() => {
+          this.spline.move_particle(this.sim.time_step, 0, 0.1);
+				// this.rotx +=
+				// 	(Math.PI / 24) *
+				// 	(1 - 1.5 * this.vely) *
+				// 	(1 + this.turnBuffer);
+				// if (this.vely > 0) {
+				// 	this.vely -= 0.00075;
+				// 	if (this.vely < 0) {
+				// 		this.vely = 0;
+				// 	}
+				// } else if (this.vely < 0) {
+				// 	this.vely += 0.00075;
+				// 	if (this.vely > 0) {
+				// 		this.vely = 0;
+				// 	}
+				// }
+			},
+			'right',
+			125
+		);
     
 
     /* Some code for your reference
