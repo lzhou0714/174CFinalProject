@@ -123,9 +123,6 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         // !!! Light changed here
         const light_position = vec4(20 * Math.cos(angle), 20,  20 * Math.sin(angle), 1.0);
         this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 1000000 ) ];
-
-        // draw axis arrows.
-        this.shapes.axis.draw(caller, this.uniforms, Mat4.identity(), this.materials.rgb);
       }
     }
 
@@ -168,15 +165,9 @@ export class Part_three_chain extends Part_three_chain_base
     const t = this.t = this.uniforms.animation_time/1000;
 
     // !!! Draw ground
-    let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(10, 0.01, 10));
+    let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 0.01, 1000));
     this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
 
-    // !!! Draw ball (for reference)
-    let ball_transform = Mat4.translation(this.ball_location[0], this.ball_location[1], this.ball_location[2])
-        .times(Mat4.scale(this.ball_radius, this.ball_radius, this.ball_radius));
-    this.shapes.ball.draw( caller, this.uniforms, ball_transform, { ...this.materials.metal, color: blue } );
-
-    // TODO: you should draw spline here.
     for (const render of this.renders) {
       render.draw(caller, this.uniforms);
     }
