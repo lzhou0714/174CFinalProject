@@ -57,8 +57,8 @@ const Part_three_chain_base = defs.Part_three_chain_base =
 
         this.sim = new Simulation();
         this.sim.gravity = 200;
-        this.sim.create_particles(8);
-        this.sim.create_springs(7);
+        this.sim.create_particles(2);
+        this.sim.create_springs(1);
         this.sim.ground_kd = 1000;
         this.sim.ground_ks = 5000;
         this.sim.integration = "verlet";
@@ -71,13 +71,13 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.sim.set_particle(6, 20, 1.25 + offset, 1, 0, 0, 0, 0);
         this.sim.set_particle(7, 20, 1 + offset, 1, 0, 0, 0, 0);
 
-        this.sim.set_spring(0, 0, 1, 1000, 1000, 0.5);
-        this.sim.set_spring(1, 1, 2, 10000, 10000, 1);
-        this.sim.set_spring(2, 2, 3, 10000, 10000, 1);
-        this.sim.set_spring(3, 3, 4, 10000, 10000, 1);
-        this.sim.set_spring(4, 4, 5, 10000, 10000, 1);
-        this.sim.set_spring(5, 5, 6, 10000, 10000, 1);
-        this.sim.set_spring(6, 6, 7, 10000, 10000, 1);
+        this.sim.set_spring(0, 0, 1, 1000, 10, 0.1);
+        this.sim.set_spring(1, 1, 2, 1000, 10, 0.1);
+        this.sim.set_spring(2, 2, 3, 1000, 10, 0.1);
+        this.sim.set_spring(3, 3, 4, 1000, 10, 0.1);
+        this.sim.set_spring(4, 4, 5, 1000, 10, 0.1);
+        this.sim.set_spring(5, 5, 6, 1000, 10, 0.1);
+        this.sim.set_spring(6, 6, 7, 1000, 10, 0.1);
 
         this.renders = [];
         this.renders.push(new CurveShape(this.spline.lookup_table, SAMPLE_COUNT));
@@ -87,6 +87,12 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         for (const spring of this.sim.springs) {
           this.renders.push(new SpringShapeRender(spring));
         }
+
+        this.turn_direction = vec3(0,0,0);
+        this.player_velocity = 0.01;
+        this.current_direction = vec3(0,0,0);
+        this.keyListeners = {};
+        this.turn_speed = 1;
       }
 
       render_animation( caller )
@@ -110,7 +116,9 @@ const Part_three_chain_base = defs.Part_three_chain_base =
           // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
 
           // !!! Camera changed here
-          Shader.assign_camera( Mat4.look_at (vec3 (10, 10, 10), vec3 (0, 0, 0), vec3 (0, 1, 0)), this.uniforms );
+      
+        //   Shader.assign_camera(
+        //      Mat4.look_at (vec3 (10, 10, 10), vec3 (0, 0, 0), vec3 (0, 1, 0)), this.uniforms );
         }
         this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 100 );
 
@@ -167,11 +175,31 @@ export class Part_three_chain extends Part_three_chain_base
     // !!! Draw ground
     let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 0.01, 1000));
     this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
+    this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
     for (const render of this.renders) {
       render.draw(caller, this.uniforms);
     }
-    this.sim.advance_frame_part3(this.sim.time_step, this.spline);
+    // this.sim.advance_frame_part3(this.sim.time_step, this.spline);
+    // this.current_direction += this.sim.lerpAngle(this.current_direction, this.turn_direction, this.turn_speed);
+    this.current_direction = this.turn_direction;
+
+    this.sim.move_spline(this.sim.time_step,
+      this.player_velocity * this.current_direction[0], 
+      this.player_velocity * this.current_direction[2]);
+
+      Shader.assign_camera(
+        Mat4.look_at (
+          vec3( this.sim.get_head_position()[0] + 10
+          , 50, this.sim.get_head_position()[2]), 
+        vec3 (this.sim.get_head_position()[0],
+          0, 
+          this.sim.get_head_position()[2]), 
+        vec3 (0, 0, 1)), 
+        this.uniforms );
+
+      // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
+
   }
 
   addHoldKey(key, callback, name, interval = 100) {
@@ -204,13 +232,18 @@ export class Part_three_chain extends Part_three_chain_base
     this.addHoldKey(
 			'w', //move in z direction
 			() => {
-					this.spline.move_particle(this.sim.time_step, 0.1, 0);
+        
+					// this.spline.move_particle(this.sim.time_step, 0.1, 0);
+          this.turn_direction.add_by(vec3(0,0,1));
 
-				// } else {
-				// 	// this.vely = this.vely > 0.03 ? 0.03 : this.vely;
-				// }
+          if (this.turn_direction.norm() > 1){
+            this.turn_direction = this.turn_direction.normalized();
+          }
+          console.log("w");
+          console.log(this.turn_direction);
+
+
 			},
-
 			'up',
 			125
 		);
@@ -218,7 +251,12 @@ export class Part_three_chain extends Part_three_chain_base
 		this.addHoldKey(
 			's',
 			() => {
-          this.spline.move_particle(this.sim.time_step, -0.1, 0);
+          // this.spline.move_particle(this.sim.time_step, -0.1, 0);
+          this.turn_direction.add_by(vec3(0,0,-1));
+          if (this.turn_direction.norm() > 1){
+            this.turn_direction = this.turn_direction.normalized();
+          }          
+          console.log("s");
 			},
 			'down',
 			125
@@ -226,30 +264,24 @@ export class Part_three_chain extends Part_three_chain_base
 		this.addHoldKey(
 			'd',
 			() => {
-          this.spline.move_particle(this.sim.time_step, 0, -0.1);
-				// this.rotx -=
-				// 	(Math.PI / 24) *
-				// 	(1 - 1.5 * this.vely) *
-				// 	(1 + this.turnBuffer);
-				// if (this.vely > 0) {
-				// 	this.vely -= 0.00075;
-				// 	if (this.vely < 0) {
-				// 		this.vely = 0;
-				// 	}
-				// } else if (this.vely < 0) {
-				// 	this.vely += 0.00075;
-				// 	if (this.vely > 0) {
-				// 		this.vely = 0;
-				// 	}
-				// }
+        this.turn_direction.add_by(vec3(-1,0,0));
+        if (this.turn_direction.norm() > 1){
+          this.turn_direction = this.turn_direction.normalized();
+        }
+                console.log("d");
 			},
-			'left',
+			'right',
 			125
 		);
 		this.addHoldKey(
 			'a',
 			() => {
-          this.spline.move_particle(this.sim.time_step, 0, 0.1);
+        this.turn_direction.add_by(vec3(1,0,0));
+        if (this.turn_direction.norm() > 1){
+          this.turn_direction = this.turn_direction.normalized();
+        }        
+        console.log("a");
+          // this.spline.move_particle(this.sim.time_step, 0, 0.1);
 				// this.rotx +=
 				// 	(Math.PI / 24) *
 				// 	(1 - 1.5 * this.vely) *
@@ -266,7 +298,7 @@ export class Part_three_chain extends Part_three_chain_base
 				// 	}
 				// }
 			},
-			'right',
+			'left',
 			125
 		);
     

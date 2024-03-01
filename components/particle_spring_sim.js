@@ -204,10 +204,19 @@ export class Simulation {
     //     this.advance_time_step(delta_t, this.particles[0]); 
     //   }
     // }
-    move_particle(delta_t, delta_x, delta_z){
+    move_spline(delta_t, delta_x, delta_z){
+
+      // add bound checking somewhere
       this.particles[0].set_position(this.particles[0].position[0] + delta_x, 
         this.particles[0].position[1], 
         this.particles[0].position[2] + delta_z);
+
       this.advance_time_step(delta_t, this.particles[0]);
+    }
+    get_head_position(){
+      return this.particles[0].position;
+    }
+    lerpAngle(current, target, turnspeed) {
+      return (target - current) * turnspeed;
     }
   }
