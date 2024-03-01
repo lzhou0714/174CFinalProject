@@ -114,6 +114,8 @@ export class Simulation {
       this.integration = "euler";
       this.time_step = 0.001;
       this.time = 0;
+      this.mu_s = 0.3;
+      this.mu_k = 0.0009;
     }
   
     create_particles(n) {
@@ -148,6 +150,22 @@ export class Simulation {
                               .minus(GROUND_NORMAL.times(this.ground_kd * (particle.velocity.dot(GROUND_NORMAL))));
       return collision_force;
     }
+
+    calculate_friction(particle) {
+      const normal_force = Math.abs(this.gravity) * particle.mass;
+      const static_friction_force = normal_force * this.mu_s;
+      const dynamic_friction_force = normal_force * this.mu_k;
+
+      const velocity_mag = particle.velocity.norm();
+      if(velocity_mag === 0) {
+        return vec3(0,0,0);
+      }
+      else {
+        const friction_dir = particle.velocity.normalized().times(-1);
+        const dynamic_friction_total = friction_dir.times(dynamic_friction_force);
+        return dynamic_friction_total;
+      }
+    }
   
     advance_time_step(delta_t, exclude_particle = null) {
       // Calculate net force on each particle
@@ -160,6 +178,10 @@ export class Simulation {
           }
           particle.add_to_net_force(vec3(0, -this.gravity, 0));
           particle.add_to_net_force(this.calculate_plane_collision(particle));
+
+          // add friction force
+          const friction_force = this.calculate_friction(particle);
+          particle.add_to_net_force(friction_force);
         }
       }
       // Calculate forces from springs
@@ -167,6 +189,7 @@ export class Simulation {
         spring.particle_i.add_to_net_force(spring.force_on_particle_i());
         spring.particle_j.add_to_net_force(spring.force_on_particle_j());
       }
+
   
       // Update positions and velocities after one time step
       for (const particle of this.particles) {
