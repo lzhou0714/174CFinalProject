@@ -1,7 +1,7 @@
 import {tiny, defs} from './examples/common.js';
 import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
-import { Simulation } from './components/particle_spring_sim.js';
-import { CurveShape, ParticleShapeRender, SpringShapeRender } from './components/shape_renders.js';
+import { CurveShape} from './components/shape_renders.js';
+import { Snake } from './components/snake.js';
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
@@ -43,56 +43,20 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
         this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
 
-        this.ball_location = vec3(1, 1, 1);
-        this.ball_radius = 0.25;
-
-        // TODO: you should create the necessary shapes
-        const offset = 0;
         this.spline = new HermiteSpline();
-        // this.spline.add_point(0, 7 + offset, 0, 0, 0, 0);
-        this.spline.add_point( 6 + offset, 0, 0, -5, 0, 5);
-        this.spline.add_point( 5 + offset, 0, 3, 5, 0, 5);
-        this.spline.add_point( 4 + offset, 0, 3, 5, 0, -5);
-        this.spline.add_point( 5 + offset, 0, 0, 5, 0, -5);
+        this.spline.add_point( 6, 0, 0, -5, 0, 5);
+        this.spline.add_point( 5, 0, 3, 5, 0, 5);
+        this.spline.add_point( 4, 0, 3, 5, 0, -5);
+        this.spline.add_point( 5, 0, 0, 5, 0, -5);
+        this.snake = new Snake();
 
-        this.sim = new Simulation();
-        this.sim.gravity = 200;
-        this.sim.create_particles(2);
-        this.sim.create_springs(1);
-        this.sim.ground_kd = 1000;
-        this.sim.ground_ks = 5000;
-        this.sim.integration = "verlet";
-        this.sim.set_particle(0, 25, 5 + offset, 1, 0, 0, 0, 0);
-        this.sim.set_particle(1, 20, 4 + offset, 1, 0, 0, 0, 0);
-        this.sim.set_particle(2, 20, 3 + offset, 1, 0, 0, 0, 0);
-        this.sim.set_particle(3, 20, 2 + offset, 1, 0, 0, 0, 0);
-        this.sim.set_particle(4, 20, 1.75 + offset, 1, 0, 0, 0, 0);
-        this.sim.set_particle(5, 20, 1.5 + offset, 1, 0, 0, 0, 0);
-        this.sim.set_particle(6, 20, 1.25 + offset, 1, 0, 0, 0, 0);
-        this.sim.set_particle(7, 20, 1 + offset, 1, 0, 0, 0, 0);
-
-        this.sim.set_spring(0, 0, 1, 1000, 10, 0.1);
-        this.sim.set_spring(1, 1, 2, 1000, 10, 0.1);
-        this.sim.set_spring(2, 2, 3, 1000, 10, 0.1);
-        this.sim.set_spring(3, 3, 4, 1000, 10, 0.1);
-        this.sim.set_spring(4, 4, 5, 1000, 10, 0.1);
-        this.sim.set_spring(5, 5, 6, 1000, 10, 0.1);
-        this.sim.set_spring(6, 6, 7, 1000, 10, 0.1);
-
-        this.renders = [];
-        this.renders.push(new CurveShape(this.spline.lookup_table, SAMPLE_COUNT));
-        for (const particle of this.sim.particles) {
-          this.renders.push(new ParticleShapeRender(particle));
-        }
-        for (const spring of this.sim.springs) {
-          this.renders.push(new SpringShapeRender(spring));
-        }
 
         this.turn_direction = vec3(0,0,0);
         this.player_velocity = 0.01;
         this.current_direction = vec3(0,0,0);
         this.keyListeners = {};
         this.turn_speed = 1;
+        this.spline_shape = new CurveShape(this.spline.lookup_table, SAMPLE_COUNT);
       }
 
       render_animation( caller )
@@ -177,29 +141,30 @@ export class Part_three_chain extends Part_three_chain_base
     this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
-    for (const render of this.renders) {
-      render.draw(caller, this.uniforms);
-    }
     // this.sim.advance_frame_part3(this.sim.time_step, this.spline);
     // this.current_direction += this.sim.lerpAngle(this.current_direction, this.turn_direction, this.turn_speed);
     this.current_direction = this.turn_direction;
 
-    this.sim.move_spline(this.sim.time_step,
+    this.snake.sim.move_spline(this.snake.sim.time_step,
       this.player_velocity * this.current_direction[0], 
       this.player_velocity * this.current_direction[2]);
 
       Shader.assign_camera(
         Mat4.look_at (
-          vec3( this.sim.get_head_position()[0] + 10
-          , 50, this.sim.get_head_position()[2]), 
-        vec3 (this.sim.get_head_position()[0],
+          vec3( this.snake.sim.get_head_position()[0] + 10
+          , 50, this.snake.sim.get_head_position()[2]), 
+        vec3 (this.snake.sim.get_head_position()[0],
           0, 
-          this.sim.get_head_position()[2]), 
+          this.snake.sim.get_head_position()[2]), 
         vec3 (0, 0, 1)), 
         this.uniforms );
 
       // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
 
+    this.spline_shape.draw(caller, this.uniforms);
+    this.snake.draw(caller, this.uniforms);
+
+    this.snake.advance_frame(this.spline);
   }
 
   addHoldKey(key, callback, name, interval = 100) {
@@ -301,7 +266,8 @@ export class Part_three_chain extends Part_three_chain_base
 			'left',
 			125
 		);
-    
+  }
+}
 
     /* Some code for your reference
     this.key_triggered_button( "Copy input", [ "c" ], function() {
@@ -310,21 +276,7 @@ export class Part_three_chain extends Part_three_chain_base
       document.getElementById("output").value = text;
     } );
     this.new_line();
-    this.key_triggered_button( "Relocate", [ "r" ], function() {
-      let text = document.getElementById("input").value;
-      const words = text.split(' ');
-      if (words.length >= 3) {
-        const x = parseFloat(words[0]);
-        const y = parseFloat(words[1]);
-        const z = parseFloat(words[2]);
-        this.ball_location = vec3(x, y, z)
-        document.getElementById("output").value = "success";
-      }
-      else {
-        document.getElementById("output").value = "invalid input";
-      }
-    } );
-     */
+    this.key_triggered_button( "Add Segment", [ "V" ], () => {this.snake.add_segment();} );
   }
 
   parse_commands() {
@@ -337,3 +289,4 @@ export class Part_three_chain extends Part_three_chain_base
     //TODO
   }
 }
+*/
