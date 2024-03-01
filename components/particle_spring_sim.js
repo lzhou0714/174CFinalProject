@@ -114,6 +114,7 @@ export class Simulation {
       this.integration = "euler";
       this.time_step = 0.001;
       this.time = 0;
+      this.started = false;
     }
   
     create_particles(n) {
@@ -132,6 +133,14 @@ export class Simulation {
   
     set_particle(index, mass, x, y, z, vx, vy, vz) {
       this.particles[index].set(mass, x, y, z, vx, vy, vz);
+    }
+
+    append_spring_and_particle(mass, x, y, z, vx, vy, vz, pindex1, pindex2, ks, kd, length) {
+      this.particles.push(new Particle());
+      this.set_particle(this.particles.length - 1, mass, x, y, z, vx, vy, vz);
+
+      this.springs.push(new Spring());
+      this.set_spring(this.springs.length - 1, pindex1, pindex2, ks, kd, length);
     }
   
     set_spring(sindex, pindex1, pindex2, ks, kd, length) {
@@ -192,7 +201,7 @@ export class Simulation {
       }
     }
 
-    advance_frame_part3(delta_t, spline) {
+    advance_frame_part3(spline, delta_t = 0.001) {
       // How many steps of delta_t to do per frame
       const num_samples = 1/delta_t/30;
   
