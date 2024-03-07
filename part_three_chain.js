@@ -19,7 +19,6 @@ const Part_three_chain_base = defs.Part_three_chain_base =
                                                // isolating that code so it can be experimented with on its own.
       init()
       {
-        console.log("init")
 
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         this.hover = this.swarm = false;
@@ -43,20 +42,14 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
         this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
 
-        this.spline = new HermiteSpline();
-        this.spline.add_point( 6, 0, 0, -5, 0, 5);
-        this.spline.add_point( 5, 0, 3, 5, 0, 5);
-        this.spline.add_point( 4, 0, 3, 5, 0, -5);
-        this.spline.add_point( 5, 0, 0, 5, 0, -5);
         this.snake = new Snake();
 
 
         this.turn_direction = vec3(0,0,0);
-        this.player_velocity = 0.02;
+        this.player_velocity = 0.05;
         this.current_direction = vec3(0,0,0);
         this.keyListeners = {};
         this.turn_speed = 1;
-        this.spline_shape = new CurveShape(this.spline.lookup_table, SAMPLE_COUNT);
       }
 
       render_animation( caller )
@@ -137,7 +130,7 @@ export class Part_three_chain extends Part_three_chain_base
     const t = this.t = this.uniforms.animation_time/1000;
 
     // !!! Draw ground
-    let floor_transform = Mat4.translation(0, 1, 0).times(Mat4.scale(1000, 0.01, 1000));
+    let floor_transform = Mat4.translation(0, 0.7, 0).times(Mat4.scale(1000, 0.01, 1000));
     this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
@@ -145,36 +138,23 @@ export class Part_three_chain extends Part_three_chain_base
     // this.current_direction += this.sim.lerpAngle(this.current_direction, this.turn_direction, this.turn_speed);
     this.current_direction = this.turn_direction;
 
-    this.snake.sim.move_spline(this.snake.sim.time_step,
-      this.player_velocity * this.current_direction[0], 
-      this.player_velocity * this.current_direction[2]);
-
-      // Shader.assign_camera(
-      //   Mat4.look_at (
-      //     vec3( this.snake.sim.get_head_position()[0] + 10
-      //     , 50, this.snake.sim.get_head_position()[2]), 
-      //   vec3 (this.snake.sim.get_head_position()[0],
-      //     0, 
-      //     this.snake.sim.get_head_position()[2]), 
-      //   vec3 (0, 0, 1)), 
-      //   this.uniforms );
+      Shader.assign_camera(
+        Mat4.look_at (
+          vec3( this.snake.sim.get_head_position()[0]
+          , 10, this.snake.sim.get_head_position()[2] - 35), 
+        vec3 (this.snake.sim.get_head_position()[0],
+          0, 
+          this.snake.sim.get_head_position()[2]), 
+        vec3 (0, 0, 1)), 
+        this.uniforms );
 
       // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
-
-    this.spline_shape.draw(caller, this.uniforms);
     this.snake.draw(caller, this.uniforms);
-
-    this.snake.advance_frame(this.spline);
+    this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));
   }
 
-  addHoldKey(key, callback, name, interval = 100) {
+  addHoldKey(key, callback, name, interval = 500) {
 		this.key_triggered_button(name, [key], () => {});
-
-		window.setInterval(() => {
-			if (this.keyListeners[name]) {
-				callback();
-			}
-		}, interval);
 
 		document.addEventListener('keydown', (e) => {
 			if (e.key === key) {
@@ -185,8 +165,16 @@ export class Part_three_chain extends Part_three_chain_base
 		document.addEventListener('keyup', (e) => {
 			if (e.key == key) {
 				this.keyListeners[name] = false;
+        this.turn_direction = vec3(0, 0, 0);
 			}
 		});
+
+    window.setInterval(() => {
+			if (this.keyListeners[name]) {
+        console.log("running");
+				callback();
+			}
+		}, interval);
 	}
 
   render_controls()
@@ -204,8 +192,6 @@ export class Part_three_chain extends Part_three_chain_base
           if (this.turn_direction.norm() > 1){
             this.turn_direction = this.turn_direction.normalized();
           }
-          console.log("w");
-          console.log(this.turn_direction);
 
 
 			},
@@ -221,7 +207,6 @@ export class Part_three_chain extends Part_three_chain_base
           if (this.turn_direction.norm() > 1){
             this.turn_direction = this.turn_direction.normalized();
           }          
-          console.log("s");
 			},
 			'down',
 			125
@@ -233,7 +218,6 @@ export class Part_three_chain extends Part_three_chain_base
         if (this.turn_direction.norm() > 1){
           this.turn_direction = this.turn_direction.normalized();
         }
-                console.log("d");
 			},
 			'right',
 			125
@@ -245,7 +229,6 @@ export class Part_three_chain extends Part_three_chain_base
         if (this.turn_direction.norm() > 1){
           this.turn_direction = this.turn_direction.normalized();
         }        
-        console.log("a");
           // this.spline.move_particle(this.sim.time_step, 0, 0.1);
 				// this.rotx +=
 				// 	(Math.PI / 24) *

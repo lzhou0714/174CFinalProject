@@ -8,14 +8,14 @@ export class Snake {
     constructor(snake_length = 3) {
         this.length = snake_length;
         // Default values for particles and springs
-        this.particle_mass = 1;
-        this.spring_ks = 10000;
+        this.particle_mass = 10;
+        this.spring_ks = 2500;
         this.spring_kd = 100;
-        this.spring_length = 0.5
+        this.spring_length = 1;
 
         // Create simulation
         this.sim = new Simulation();
-        this.sim.gravity = 200;
+        this.sim.gravity = 9.8;
         this.sim.ground_kd = 1000;
         this.sim.ground_ks = 50000;
         this.sim.integration = "verlet";
@@ -44,10 +44,9 @@ export class Snake {
         }
     }
 
-    advance_frame(spline) {
-        if (this.sim.started) {
-            this.sim.advance_frame_part3(spline);
-        }
+    advance_frame(time_step, head_position_delta) {
+        this.sim.particles[0].position = this.sim.particles[0].position.plus(head_position_delta);
+        this.sim.advance_frame(time_step);
     }
 
     // Add a new segment to the snake
@@ -55,7 +54,7 @@ export class Snake {
         this.sim.append_spring_and_particle(
             this.particle_mass, 
             this.sim.particles[this.length - 1].position[0], 
-            this.sim.particles[this.length - 1].position[1] + 1, 
+            this.sim.particles[this.length - 1].position[1] + 2, 
             this.sim.particles[this.length - 1].position[2], 
             0, 
             0, 

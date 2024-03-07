@@ -91,12 +91,16 @@ export class Spring {
   
       // Calculate damper force
       const damping_force = d_ij_unit.times(v_ij.dot(d_ij_unit)).times(this.kd);
+
+      // Make force only in the direction of the spring so snake moves more in line
+      const total_force = spring_force.plus(damping_force);
+      const force_in_direction_of_spring = d_ij_unit.times(total_force.dot(d_ij_unit));
   
-      return spring_force.plus(damping_force);
+      return force_in_direction_of_spring;
     }
   
     force_on_particle_j() {
-      return this.force_on_particle_i().times(-1);
+      return (this.force_on_particle_i()).times(-1);
     }
   }
   
@@ -109,15 +113,15 @@ export class Simulation {
     constructor() {
       this.particles = []
       this.springs = []
-      this.gravity = 0;
+      this.gravity = 9.8;
       this.ground_ks = 0;
       this.ground_kd = 0;
       this.integration = "euler";
       this.time_step = 0.001;
       this.time = 0;
       this.started = false;
-      this.mu_s = 0.3;
-      this.mu_k = 0.3;
+      this.mu_s = 1;
+      this.mu_k = 0.5;
     }
   
     create_particles(n) {
@@ -221,30 +225,10 @@ export class Simulation {
       const num_samples = 1/delta_t/FPS;
   
       for (let i = 0; i < num_samples; i++) {
-          this.advance_time_step(delta_t);
+          this.advance_time_step(delta_t, this.particles[0]);
       }
     }
 
-    // advance_frame_part3(spline, delta_t = 0.001) {
-    //   // How many steps of delta_t to do per frame
-    //   const num_samples = 1/delta_t/30;
-  
-    //   for (let i = 0; i < num_samples; i++) {
-    //     this.time += delta_t;
-    //     const top_particle_position = spline.get_position((Math.sin((this.time - Math.PI)/3.0) + 1)/2.0);
-    //     this.particles[0].set_position(top_particle_position[0], top_particle_position[1], top_particle_position[2]);
-    //     this.advance_time_step(delta_t, this.particles[0]); 
-    //   }
-    // }
-    move_spline(delta_t, delta_x, delta_z){
-
-      // add bound checking somewhere
-      this.particles[0].set_position(this.particles[0].position[0] + delta_x, 
-        this.particles[0].position[1], 
-        this.particles[0].position[2] + delta_z);
-
-      this.advance_time_step(delta_t, this.particles[0]);
-    }
     get_head_position(){
       return this.particles[0].position;
     }
