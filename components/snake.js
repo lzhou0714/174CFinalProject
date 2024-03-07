@@ -8,16 +8,16 @@ export class Snake {
     constructor(snake_length = 3) {
         this.length = snake_length;
         // Default values for particles and springs
-        this.particle_mass = 20;
-        this.spring_ks = 1000;
-        this.spring_kd = 1000;
-        this.spring_length = 0.1
+        this.particle_mass = 1;
+        this.spring_ks = 10000;
+        this.spring_kd = 100;
+        this.spring_length = 0.5
 
         // Create simulation
         this.sim = new Simulation();
         this.sim.gravity = 200;
         this.sim.ground_kd = 1000;
-        this.sim.ground_ks = 5000;
+        this.sim.ground_ks = 50000;
         this.sim.integration = "verlet";
         this.sim.create_particles(this.length);
         this.sim.create_springs(this.length - 1);

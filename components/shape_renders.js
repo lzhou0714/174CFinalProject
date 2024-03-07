@@ -29,7 +29,7 @@ export class ParticleShapeRender extends defs.Subdivision_Sphere {
     constructor(particle, particle_color = color(1, 0, 0, 1)) {
         super(4);
         this.particle_object = particle;
-        this.radius = 0.2;
+        this.radius = 0.5;
         this.material = { shader: new defs.Phong_Shader, ambient: .2, diffusivity: 1, specularity:  1, color: particle_color }
     }
 

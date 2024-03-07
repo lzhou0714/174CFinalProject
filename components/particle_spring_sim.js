@@ -100,7 +100,7 @@ export class Spring {
     }
   }
   
-const GROUND_POINT = vec3(0, 0, 0);
+const GROUND_POINT = vec3(0, 0.9, 0);
 const GROUND_NORMAL = vec3(0, 1, 0);
 // Assume frames per second = 60
 const FPS = 60;
@@ -117,7 +117,7 @@ export class Simulation {
       this.time = 0;
       this.started = false;
       this.mu_s = 0.3;
-      this.mu_k = 0.0009;
+      this.mu_k = 0.3;
     }
   
     create_particles(n) {

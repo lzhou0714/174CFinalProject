@@ -52,7 +52,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
 
 
         this.turn_direction = vec3(0,0,0);
-        this.player_velocity = 0.01;
+        this.player_velocity = 0.02;
         this.current_direction = vec3(0,0,0);
         this.keyListeners = {};
         this.turn_speed = 1;
@@ -137,7 +137,7 @@ export class Part_three_chain extends Part_three_chain_base
     const t = this.t = this.uniforms.animation_time/1000;
 
     // !!! Draw ground
-    let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 0.01, 1000));
+    let floor_transform = Mat4.translation(0, 1, 0).times(Mat4.scale(1000, 0.01, 1000));
     this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
@@ -149,15 +149,15 @@ export class Part_three_chain extends Part_three_chain_base
       this.player_velocity * this.current_direction[0], 
       this.player_velocity * this.current_direction[2]);
 
-      Shader.assign_camera(
-        Mat4.look_at (
-          vec3( this.snake.sim.get_head_position()[0] + 10
-          , 50, this.snake.sim.get_head_position()[2]), 
-        vec3 (this.snake.sim.get_head_position()[0],
-          0, 
-          this.snake.sim.get_head_position()[2]), 
-        vec3 (0, 0, 1)), 
-        this.uniforms );
+      // Shader.assign_camera(
+      //   Mat4.look_at (
+      //     vec3( this.snake.sim.get_head_position()[0] + 10
+      //     , 50, this.snake.sim.get_head_position()[2]), 
+      //   vec3 (this.snake.sim.get_head_position()[0],
+      //     0, 
+      //     this.snake.sim.get_head_position()[2]), 
+      //   vec3 (0, 0, 1)), 
+      //   this.uniforms );
 
       // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
 
@@ -192,7 +192,7 @@ export class Part_three_chain extends Part_three_chain_base
   render_controls()
   {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
     // buttons with key bindings for affecting this scene, and live info readouts.
-    this.control_panel.innerHTML += "Part Three: (no buttons)";
+    this.key_triggered_button("Add Segment", ["Enter"], () => {this.snake.add_segment();});
     this.new_line();
     this.addHoldKey(
 			'w', //move in z direction
