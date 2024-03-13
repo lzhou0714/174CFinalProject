@@ -2,6 +2,7 @@ import {tiny, defs} from './examples/common.js';
 import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
 import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
+import { Obstacle } from './obstacles.js';
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
@@ -50,6 +51,14 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.current_direction = vec3(0,0,0);
         this.keyListeners = {};
         this.turn_speed = 1;
+
+        this.obstacles = [];
+        const max_num = 50
+        const max_dist = 100; 
+        for (let i = 0; i < max_num; i++){
+          this.obstacles[i] = new Obstacle(Math.floor((Math.random()-0.5)*max_dist), Math.floor((Math.random()-0.5)*max_dist));
+        }
+
       }
 
       render_animation( caller )
@@ -149,6 +158,10 @@ export class Part_three_chain extends Part_three_chain_base
         this.uniforms );
 
       // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
+    for (let i = 0; i < this.obstacles.length; i++){
+      console.log(this.obstacles[i])
+      this.obstacles[i].draw(caller, this.uniforms,{ ...this.materials.plastic, color: blue });
+    }
     this.snake.draw(caller, this.uniforms);
     this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));
   }
