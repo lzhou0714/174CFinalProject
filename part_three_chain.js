@@ -77,7 +77,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         //   Shader.assign_camera(
         //      Mat4.look_at (vec3 (10, 10, 10), vec3 (0, 0, 0), vec3 (0, 1, 0)), this.uniforms );
         }
-        this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 100 );
+        this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 10000000 );
 
         // *** Lights: *** Values of vector or point lights.  They'll be consulted by
         // the shader when coloring shapes.  See Light's class definition for inputs.
@@ -86,8 +86,8 @@ const Part_three_chain_base = defs.Part_three_chain_base =
 
         // const light_position = Mat4.rotation( angle,   1,0,0 ).times( vec4( 0,-1,1,0 ) ); !!!
         // !!! Light changed here
-        const light_position = vec4(20 * Math.cos(angle), 20,  20 * Math.sin(angle), 1.0);
-        this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 1000000 ) ];
+        const light_position = vec4( 0, 500, 500, 1 );
+        this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 10**10 ) ];
       }
     }
 
@@ -134,10 +134,18 @@ export class Part_three_chain extends Part_three_chain_base
     this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
+
+    //draw sky box
+    let sky_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 1000, 1000));
+    this.shapes.ball.draw( caller, this.uniforms, sky_transform, { ...this.materials.plastic, color: color(1,1,1,1) } );
+
+
     // this.sim.advance_frame_part3(this.sim.time_step, this.spline);
     // this.current_direction += this.sim.lerpAngle(this.current_direction, this.turn_direction, this.turn_speed);
     this.current_direction = this.turn_direction;
 
+    this.debug = true;
+    if (!this.debug){
       Shader.assign_camera(
         Mat4.look_at (
           vec3( this.snake.sim.get_head_position()[0]
@@ -147,7 +155,7 @@ export class Part_three_chain extends Part_three_chain_base
           this.snake.sim.get_head_position()[2]), 
         vec3 (0, 0, 1)), 
         this.uniforms );
-
+    }
       // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
     this.snake.draw(caller, this.uniforms);
     this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));

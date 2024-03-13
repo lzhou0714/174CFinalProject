@@ -85,7 +85,7 @@ const Funny_Shader = defs.Funny_Shader =
 
 const Phong_Shader = defs.Phong_Shader =
   class Phong_Shader extends Shader {
-      constructor (num_lights = 2) {
+      constructor (num_lights = 5) {
           super ();
           this.num_lights = num_lights;
       }
