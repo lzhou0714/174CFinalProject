@@ -38,11 +38,13 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         // Expected values can be found listed in Phong_Shader::update_GPU().
         const phong = new defs.Phong_Shader();
         const tex_phong = new defs.Textured_Phong();
-        this.materials = {};
-        this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
-        this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
-        this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
-
+        this.materials = {
+          plastic: { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) },
+          metal: { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) },
+          rgb: { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) },
+          flat: {shader: phong, ambient: 1, diffusivity: 0, specularity: 0, color: color(0, 0, 0, 1)},
+          sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")}
+        };
         this.snake = new Snake();
 
 
@@ -58,7 +60,6 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         for (let i = 0; i < max_num; i++){
           this.obstacles[i] = new Obstacle(Math.floor((Math.random()-0.5)*max_dist), Math.floor((Math.random()-0.5)*max_dist));
         }
-
       }
 
       render_animation( caller )
@@ -140,13 +141,13 @@ export class Part_three_chain extends Part_three_chain_base
 
     // !!! Draw ground
     let floor_transform = Mat4.translation(0, 0.7, 0).times(Mat4.scale(1000, 0.01, 1000));
-    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
+    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.flat, color: yellow } );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
 
     //draw sky box
     let sky_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 1000, 1000));
-    this.shapes.ball.draw( caller, this.uniforms, sky_transform, { ...this.materials.plastic, color: color(1,1,1,1) } );
+    this.shapes.ball.draw( caller, this.uniforms, sky_transform, { ...this.materials.sky} );
 
 
     // this.sim.advance_frame_part3(this.sim.time_step, this.spline);
@@ -167,7 +168,6 @@ export class Part_three_chain extends Part_three_chain_base
     }
       // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
     for (let i = 0; i < this.obstacles.length; i++){
-      console.log(this.obstacles[i])
       this.obstacles[i].draw(caller, this.uniforms,{ ...this.materials.plastic, color: blue });
     }
     this.snake.draw(caller, this.uniforms);
@@ -206,15 +206,13 @@ export class Part_three_chain extends Part_three_chain_base
     this.addHoldKey(
 			'w', //move in z direction
 			() => {
-        
+
 					// this.spline.move_particle(this.sim.time_step, 0.1, 0);
           this.turn_direction.add_by(vec3(0,0,1));
 
           if (this.turn_direction.norm() > 1){
             this.turn_direction = this.turn_direction.normalized();
           }
-
-
 			},
 			'up',
 			125
