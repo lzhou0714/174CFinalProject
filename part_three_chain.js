@@ -64,6 +64,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         for (let i = 0; i < max_num; i++){
           this.obstacles[i] = new Obstacle(Math.floor((Math.random()-0.5)*max_dist), Math.floor((Math.random()-0.5)*max_dist));
         }
+        this.debug = false;
       }
 
       render_animation( caller )
@@ -155,7 +156,6 @@ export class Part_three_chain extends Part_three_chain_base
     
     this.current_direction = slerp(this.current_direction, this.turn_direction, 0.01);
 
-    this.debug = true;
     if (!this.debug){
       Shader.assign_camera(
         Mat4.look_at (
@@ -202,6 +202,8 @@ export class Part_three_chain extends Part_three_chain_base
   {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
     // buttons with key bindings for affecting this scene, and live info readouts.
     this.key_triggered_button("Add Segment", ["Enter"], () => {this.snake.add_segment();});
+    this.new_line();
+    this.key_triggered_button("Toggle Debug", ["b"], () => {this.debug = !this.debug;});
     this.new_line();
     this.addHoldKey(
 			'w', //move in z direction
