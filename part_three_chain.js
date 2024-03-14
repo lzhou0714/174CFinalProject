@@ -2,6 +2,7 @@ import {tiny, defs} from './examples/common.js';
 import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
 import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
+import { Obstacle } from './obstacles.js';
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
@@ -37,11 +38,14 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         // Expected values can be found listed in Phong_Shader::update_GPU().
         const phong = new defs.Phong_Shader();
         const tex_phong = new defs.Textured_Phong();
-        this.materials = {};
-        this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
-        this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
-        this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
 
+        this.materials = {
+          plastic: { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) },
+          metal: { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) },
+          rgb: { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) },
+          flat: {shader: phong, ambient: 1, diffusivity: 0, specularity: 0, color: color(0, 0, 0, 1)},
+          sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")}
+        };
         this.snake = new Snake(this);
 
 
@@ -49,6 +53,14 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.player_velocity = 0.1;
         this.current_direction = vec3(1,0,0);
         this.keyListeners = {};
+        this.turn_speed = 1;
+
+        this.obstacles = [];
+        const max_num = 50
+        const max_dist = 100; 
+        for (let i = 0; i < max_num; i++){
+          this.obstacles[i] = new Obstacle(Math.floor((Math.random()-0.5)*max_dist), Math.floor((Math.random()-0.5)*max_dist));
+        }
       }
 
       render_animation( caller )
@@ -76,7 +88,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         //   Shader.assign_camera(
         //      Mat4.look_at (vec3 (10, 10, 10), vec3 (0, 0, 0), vec3 (0, 1, 0)), this.uniforms );
         }
-        this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 100 );
+        this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 10000000 );
 
         // *** Lights: *** Values of vector or point lights.  They'll be consulted by
         // the shader when coloring shapes.  See Light's class definition for inputs.
@@ -85,8 +97,8 @@ const Part_three_chain_base = defs.Part_three_chain_base =
 
         // const light_position = Mat4.rotation( angle,   1,0,0 ).times( vec4( 0,-1,1,0 ) ); !!!
         // !!! Light changed here
-        const light_position = vec4(20 * Math.cos(angle), 20,  20 * Math.sin(angle), 1.0);
-        this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 1000000 ) ];
+        const light_position = vec4( 0, 500, 500, 1 );
+        this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 10**10 ) ];
       }
     }
 
@@ -130,11 +142,18 @@ export class Part_three_chain extends Part_three_chain_base
 
     // !!! Draw ground
     let floor_transform = Mat4.translation(0, 0.7, 0).times(Mat4.scale(1000, 0.01, 1000));
-    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
+    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.flat, color: yellow } );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
+
+    //draw sky box
+    let sky_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 1000, 1000));
+    this.shapes.ball.draw( caller, this.uniforms, sky_transform, { ...this.materials.sky} );
+    
     this.current_direction = slerp(this.current_direction, this.turn_direction, 0.01);
 
+    this.debug = true;
+    if (!this.debug){
       Shader.assign_camera(
         Mat4.look_at (
           vec3( this.snake.sim.get_head_position()[0]
@@ -144,8 +163,11 @@ export class Part_three_chain extends Part_three_chain_base
           this.snake.sim.get_head_position()[2]), 
         vec3 (0, 1, 0)), 
         this.uniforms );
+    }
 
-    // Shader.assign_camera(Mat4.look_at(vec3 (this.snake.sim.get_head_position[], 50, 0), vec3 (0, 0, 0), vec3(0, 0, 1)), this.uniforms);
+    for (let i = 0; i < this.obstacles.length; i++){
+      this.obstacles[i].draw(caller, this.uniforms,{ ...this.materials.plastic, color: blue });
+    }
     this.snake.draw(caller, this.uniforms);
     this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));
   }
@@ -181,15 +203,13 @@ export class Part_three_chain extends Part_three_chain_base
     this.addHoldKey(
 			'w', //move in z direction
 			() => {
-        
+
 					// this.spline.move_particle(this.sim.time_step, 0.1, 0);
           this.turn_direction = vec3(0,0,1);
 
           if (this.turn_direction.norm() > 1){
             this.turn_direction = this.turn_direction.normalized();
           }
-
-
 			},
 			'up',
 			125
