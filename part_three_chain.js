@@ -4,6 +4,7 @@ import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
 import { Obstacle } from './obstacles.js';
 
+
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
@@ -38,13 +39,15 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         // Expected values can be found listed in Phong_Shader::update_GPU().
         const phong = new defs.Phong_Shader();
         const tex_phong = new defs.Textured_Phong();
-
+        const tex_ground = new defs.Textured_grass();
         this.materials = {
           plastic: { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) },
           metal: { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) },
           rgb: { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) },
           flat: {shader: phong, ambient: 1, diffusivity: 0, specularity: 0, color: color(0, 0, 0, 1)},
-          sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")}
+          sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")},
+          ground: {shader: tex_ground, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/ground.png")}
+
         };
         this.snake = new Snake(this);
 
@@ -142,7 +145,7 @@ export class Part_three_chain extends Part_three_chain_base
 
     // !!! Draw ground
     let floor_transform = Mat4.translation(0, 0.7, 0).times(Mat4.scale(1000, 0.01, 1000));
-    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.flat, color: yellow } );
+    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.ground} );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
 
