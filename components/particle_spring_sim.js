@@ -96,7 +96,7 @@ export class Spring {
       const total_force = spring_force.plus(damping_force);
       const force_in_direction_of_spring = d_ij_unit.times(total_force.dot(d_ij_unit));
   
-      return force_in_direction_of_spring;
+      return total_force; //force_in_direction_of_spring;
     }
   
     force_on_particle_j() {
@@ -120,8 +120,8 @@ export class Simulation {
       this.time_step = 0.001;
       this.time = 0;
       this.started = false;
-      this.mu_s = 1;
-      this.mu_k = 0.5;
+      this.mu_s = 2;
+      this.mu_k = 1;
     }
   
     create_particles(n) {

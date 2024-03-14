@@ -1,17 +1,19 @@
 import {tiny, defs} from '../examples/common.js';
 import { Simulation, Spring } from './particle_spring_sim.js';
 import { ParticleShapeRender, SpringShapeRender } from './shape_renders.js';
+import { SnakeHead } from './snake_head.js';
 
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
 export class Snake {
-    constructor(snake_length = 3) {
+    constructor(game, snake_length = 3) {
+        this.game = game;
         this.length = snake_length;
         // Default values for particles and springs
         this.particle_mass = 10;
         this.spring_ks = 2500;
         this.spring_kd = 100;
-        this.spring_length = 1;
+        this.spring_length = 1.5;
 
         // Create simulation
         this.sim = new Simulation();
@@ -30,18 +32,26 @@ export class Snake {
 
         // Initialize shapes for drawing
         this.renders = [];
-        for (const particle of this.sim.particles) {
-            this.renders.push(new ParticleShapeRender(particle));
-          }
-          for (const spring of this.sim.springs) {
+        for (let i = 0; i < this.sim.particles.length; i++) {
+            if (i === 0) {
+                // Copy the material used by ParticleShapeRender
+                const temp = new ParticleShapeRender(this.sim.particles[0]);
+                this.snake_head = new SnakeHead(this.sim.particles[0], this.game, temp.material);
+                this.renders.push(this.snake_head);
+            } else {
+                this.renders.push(new ParticleShapeRender(this.sim.particles[i]));
+            }
+        }
+        for (const spring of this.sim.springs) {
             this.renders.push(new SpringShapeRender(spring));
-          }
+        }
     }
 
     draw(webgl_manager, uniforms) {
         for (const render of this.renders) {
             render.draw(webgl_manager, uniforms);
         }
+        console.log(this.snake_head.theta);
     }
 
     advance_frame(time_step, head_position_delta) {

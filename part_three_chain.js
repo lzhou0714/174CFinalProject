@@ -42,14 +42,13 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
         this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
 
-        this.snake = new Snake();
+        this.snake = new Snake(this);
 
 
-        this.turn_direction = vec3(0,0,0);
-        this.player_velocity = 0.05;
-        this.current_direction = vec3(0,0,0);
+        this.turn_direction = vec3(1,0,0);
+        this.player_velocity = 0.1;
+        this.current_direction = vec3(1,0,0);
         this.keyListeners = {};
-        this.turn_speed = 1;
       }
 
       render_animation( caller )
@@ -134,9 +133,7 @@ export class Part_three_chain extends Part_three_chain_base
     this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
     this.shapes.axis.draw( caller, this.uniforms, Mat4.identity(), { ...this.materials.plastic,color: color( 0,0,0,1 ) } );
 
-    // this.sim.advance_frame_part3(this.sim.time_step, this.spline);
-    // this.current_direction += this.sim.lerpAngle(this.current_direction, this.turn_direction, this.turn_speed);
-    this.current_direction = this.turn_direction;
+    this.current_direction = slerp(this.current_direction, this.turn_direction, 0.01);
 
       Shader.assign_camera(
         Mat4.look_at (
@@ -145,10 +142,10 @@ export class Part_three_chain extends Part_three_chain_base
         vec3 (this.snake.sim.get_head_position()[0],
           0, 
           this.snake.sim.get_head_position()[2]), 
-        vec3 (0, 0, 1)), 
+        vec3 (0, 1, 0)), 
         this.uniforms );
 
-      // Shader.assign_camera(Mat4.look_at(vec3 (10, 10, 10), vec3 (0, 0, 0), vec3(0, 1, 0)), this.uniforms);
+    // Shader.assign_camera(Mat4.look_at(vec3 (this.snake.sim.get_head_position[], 50, 0), vec3 (0, 0, 0), vec3(0, 0, 1)), this.uniforms);
     this.snake.draw(caller, this.uniforms);
     this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));
   }
@@ -165,13 +162,12 @@ export class Part_three_chain extends Part_three_chain_base
 		document.addEventListener('keyup', (e) => {
 			if (e.key == key) {
 				this.keyListeners[name] = false;
-        this.turn_direction = vec3(0, 0, 0);
+        // this.turn_direction = vec3(0, 0, 0);
 			}
 		});
 
     window.setInterval(() => {
 			if (this.keyListeners[name]) {
-        console.log("running");
 				callback();
 			}
 		}, interval);
@@ -187,7 +183,7 @@ export class Part_three_chain extends Part_three_chain_base
 			() => {
         
 					// this.spline.move_particle(this.sim.time_step, 0.1, 0);
-          this.turn_direction.add_by(vec3(0,0,1));
+          this.turn_direction = vec3(0,0,1);
 
           if (this.turn_direction.norm() > 1){
             this.turn_direction = this.turn_direction.normalized();
@@ -203,7 +199,7 @@ export class Part_three_chain extends Part_three_chain_base
 			's',
 			() => {
           // this.spline.move_particle(this.sim.time_step, -0.1, 0);
-          this.turn_direction.add_by(vec3(0,0,-1));
+          this.turn_direction = vec3(0,0,-1);
           if (this.turn_direction.norm() > 1){
             this.turn_direction = this.turn_direction.normalized();
           }          
@@ -214,7 +210,7 @@ export class Part_three_chain extends Part_three_chain_base
 		this.addHoldKey(
 			'd',
 			() => {
-        this.turn_direction.add_by(vec3(-1,0,0));
+        this.turn_direction = vec3(-1,0,0);
         if (this.turn_direction.norm() > 1){
           this.turn_direction = this.turn_direction.normalized();
         }
@@ -225,7 +221,7 @@ export class Part_three_chain extends Part_three_chain_base
 		this.addHoldKey(
 			'a',
 			() => {
-        this.turn_direction.add_by(vec3(1,0,0));
+        this.turn_direction = vec3(1,0,0);
         if (this.turn_direction.norm() > 1){
           this.turn_direction = this.turn_direction.normalized();
         }        
@@ -252,24 +248,17 @@ export class Part_three_chain extends Part_three_chain_base
   }
 }
 
-    /* Some code for your reference
-    this.key_triggered_button( "Copy input", [ "c" ], function() {
-      let text = document.getElementById("input").value;
-      console.log(text);
-      document.getElementById("output").value = text;
-    } );
-    this.new_line();
-    this.key_triggered_button( "Add Segment", [ "V" ], () => {this.snake.add_segment();} );
+export function slerp(startVector, endVector, t) {
+  startVector.normalized();
+  endVector.normalized();
+  var dotProduct = startVector.dot(endVector);
+  if (dotProduct > 0.9999999) {
+    // vectors are parallel
+    return endVector;
   }
+  var theta = Math.acos(dotProduct);
+  var interpolatedVector = startVector.times(Math.sin((1 - t) * theta)).plus(endVector.times(Math.sin(t * theta))).times(1/Math.sin(theta));
+  interpolatedVector.normalized();
 
-  parse_commands() {
-    document.getElementById("output").value = "parse_commands";
-    //TODO
-  }
-
-  start() { // callback for Run button
-    document.getElementById("output").value = "start";
-    //TODO
-  }
+  return interpolatedVector;
 }
-*/
