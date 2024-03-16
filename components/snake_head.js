@@ -69,17 +69,18 @@ export class SnakeHead {
         this.dof = 5;
         this.Jacobian = null;
         this.theta = [0, -0.7, 0, -1.9, -1.4, 0, 0];
-        this.theta_magnitude_max = [0.5, 1, 100, 100,  100, 2, 2, 100];
+        this.theta_magnitude_max = [0.5, 1, 1, 100,  100, 2, 2, 100];
+        // this.theta_max_value = [1000, 1000, ]
         this.apply_theta();
     }
 
     // 4. Inverse kinematic solver with pseudoinverse approach
     move_end_effector_to_p(p_goal) {
-        const delta = 0.01;
+        const delta = 0.04;
         let count = 0;
         let error_vector = p_goal.minus(this.get_end_effector_position());
 
-        while (error_vector.norm() > delta * 2 && count < 5) {
+        while (error_vector.norm() > delta * 2 && count < 2) {
             count++;
             const J = this.calculate_Jacobian();
 
@@ -104,8 +105,8 @@ export class SnakeHead {
         }
 
         // if (delta_theta._data[0][0]) {
-        this.theta[0] += -this.theta[0]/Math.abs(this.theta[0]) * Math.abs(this.theta[0] * 0.15);
-        this.theta[2] += -this.theta[2]/Math.abs(this.theta[2]) * Math.abs(this.theta[0] * 0.15);
+        this.theta[0] += -this.theta[0]/Math.abs(this.theta[0]) * Math.abs(this.theta[0] * 0.2);
+        this.theta[2] += -this.theta[2]/Math.abs(this.theta[2]) * Math.abs(this.theta[0] * 0.2);
         this.apply_theta();
         // }
     }

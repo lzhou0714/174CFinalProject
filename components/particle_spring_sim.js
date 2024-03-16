@@ -117,7 +117,7 @@ export class Simulation {
       this.ground_ks = 0;
       this.ground_kd = 0;
       this.integration = "euler";
-      this.time_step = 0.001;
+      this.time_step = 0.01;
       this.time = 0;
       this.started = false;
       this.mu_s = 2;

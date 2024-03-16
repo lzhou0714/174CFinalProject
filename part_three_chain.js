@@ -2,7 +2,7 @@ import {tiny, defs} from './examples/common.js';
 import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
 import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
-import { Food } from './obstacles.js';
+import { Food, Obstacle, max_spawn_dist } from './obstacles.js';
 
 
 // Pull these names into this module's scope for convenience:
@@ -59,14 +59,18 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.turn_speed = 1;
 
         this.obstacles = [];
-        const max_num = 10;
-        const max_dist = 200; 
-        for (let i = 0; i < max_num; i++){
+        const num_food = 15;
+        const num_obstacle = 10
+        for (let i = 0; i < num_food; i++){
           this.obstacles[i] = new Food(vec3(0, 0, 0));
+        }
+        for (let i = 0; i < num_obstacle; i++) {
+          this.obstacles.push(new Obstacle(vec3(0, 0, 0)))
         }
 
         this.debug = false;
         this.camera_isometric = true;
+        this.game_over = false;
       }
 
       render_animation( caller )
@@ -142,7 +146,9 @@ export class Part_three_chain extends Part_three_chain_base
         // translation(), scale(), and rotation() to generate matrices, and the
         // function times(), which generates products of matrices.
 
-    const blue = color( 0,0,1,1 ), yellow = color( 0.7,1,0,1 );
+    if (this.game_over) {
+      this.init();
+    }
 
     const t = this.t = this.uniforms.animation_time/1000;
 
@@ -157,6 +163,7 @@ export class Part_three_chain extends Part_three_chain_base
     this.shapes.ball.draw( caller, this.uniforms, sky_transform, { ...this.materials.sky} );
     
     this.current_direction = slerp(this.current_direction, this.turn_direction, 0.01);
+
 
     if (!this.debug){
       if (this.camera_isometric) {
@@ -187,10 +194,14 @@ export class Part_three_chain extends Part_three_chain_base
         this.obstacles[i].do_something(this.snake);
         this.obstacles[i].destroy_and_respawn(this.snake.sim.particles[0].position); 
       }
+
+      if (this.snake.sim.particles[0].position.minus(this.obstacles[i].position).norm() > max_spawn_dist) {
+        this.obstacles[i].destroy_and_respawn(this.snake.sim.particles[0].position);
+      }
     }
 
     for (const obstacle of this.obstacles) {
-      obstacle.draw(caller, this.uniforms, {...this.materials.plastic, color: blue});
+      obstacle.draw(caller, this.uniforms);
     }
     
     this.snake.draw(caller, this.uniforms);
@@ -304,6 +315,11 @@ export function slerp(startVector, endVector, t) {
   if (dotProduct > 0.9999999) {
     // vectors are parallel
     return endVector;
+  }
+  if (dotProduct < -0.99999) {
+    // vectors are nearly opposite
+    // console.log(Mat4.rotation(0.0001, 0, 1, 0).times(startVector));
+    return Mat4.rotation(0.001, 0, 1, 0).times(startVector).to3();
   }
   var theta = Math.acos(dotProduct);
   var interpolatedVector = startVector.times(Math.sin((1 - t) * theta)).plus(endVector.times(Math.sin(t * theta))).times(1/Math.sin(theta));
