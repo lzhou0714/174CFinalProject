@@ -2,7 +2,7 @@ import {tiny, defs} from './examples/common.js';
 import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
 import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
-import { Food, Obstacle, max_spawn_dist } from './obstacles.js';
+import { Food, Obstacle, Powerup, max_spawn_dist } from './obstacles.js';
 
 
 // Pull these names into this module's scope for convenience:
@@ -50,6 +50,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
 
         };
         this. snake = new Snake(this);
+        this.t_step = 1/1000;
 
 
         this.turn_direction = vec3(1,0,0);
@@ -67,6 +68,16 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         for (let i = 0; i < num_obstacle; i++) {
           this.obstacles.push(new Obstacle(vec3(0, 0, 0)))
         }
+//         this.Powerups = [];
+//         const num_powerups = 5;
+//         const max_num = 10;
+//         const max_dist = 200; 
+//         for (let i = 0; i < max_num; i++){
+//           this.obstacles[i] = new Food(vec3(0, 0, 0));
+//         }
+//         for (let i = 0; i < num_powerups; i++){
+//           this.Powerups[i] = new Powerup(vec3(0, 0, 0));
+//         }
 
         this.debug = false;
         this.camera_isometric = true;
@@ -203,7 +214,9 @@ export class Part_three_chain extends Part_three_chain_base
     for (const obstacle of this.obstacles) {
       obstacle.draw(caller, this.uniforms);
     }
-    
+    // for (const powerup of this.Powerups) {
+    //   powerup.update(this.t_step, t);
+    // }
     this.snake.draw(caller, this.uniforms);
     this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));
   }

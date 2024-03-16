@@ -37,6 +37,7 @@ export class Snake {
         this.renders = [];
         for (let i = 0; i < this.sim.particles.length; i++) {
             let particle_color  = color(1,1,1,1);
+
             if (this.color_mode ===true){
                 particle_color = color(1,0,0,1);
             }
@@ -47,6 +48,7 @@ export class Snake {
                 const temp = new ParticleShapeRender(
                     {particle: this.sim.particles[0], 
                     particle_color: color(1,0,0,1)});
+
                 this.snake_head = new SnakeHead(this.sim.particles[0], this.game, temp.material, this.particle_head_radius);
                 this.renders.push(this.snake_head);
             } else {
