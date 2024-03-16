@@ -17,6 +17,7 @@ export class Snake {
         this.particle_radius = 1;
         this.particle_head_radius = 1.3;
 
+        this.color_mode = 1;
         // Create simulation
         this.sim = new Simulation();
         this.sim.gravity = 9.8;
@@ -35,13 +36,26 @@ export class Snake {
         // Initialize shapes for drawing
         this.renders = [];
         for (let i = 0; i < this.sim.particles.length; i++) {
+            let particle_color  = color(1,1,1,1);
+            console.log(this.color_mode)
+            if (this.color_mode ===true){
+                particle_color = color(1,0,0,1);
+            }
+            this.color_mode = !this.color_mode;
+
+            console.log(particle_color);
             if (i === 0) {
                 // Copy the material used by ParticleShapeRender
-                const temp = new ParticleShapeRender(this.sim.particles[0]);
+                const temp = new ParticleShapeRender(
+                    {particle: this.sim.particles[0], 
+                    particle_color: color(1,0,0,1)});
+                console.log(temp.material)
                 this.snake_head = new SnakeHead(this.sim.particles[0], this.game, temp.material, this.particle_head_radius);
                 this.renders.push(this.snake_head);
             } else {
-                this.renders.push(new ParticleShapeRender(this.sim.particles[i], this.particle_radius));
+                this.renders.push(new ParticleShapeRender(
+                    {particle: this.sim.particles[i], 
+                    particle_color: particle_color, particle_radius: this.particle_radius}));
             }
         }
         for (const spring of this.sim.springs) {
@@ -50,7 +64,9 @@ export class Snake {
     }
 
     draw(webgl_manager, uniforms) {
+
         for (const render of this.renders) {
+            console.log(render);
             render.draw(webgl_manager, uniforms);
         }
     }
@@ -62,6 +78,12 @@ export class Snake {
 
     // Add a new segment to the snake
     add_segment() {
+        let particle_color  = color(1,1,1,1);
+            console.log(this.color_mode)
+            if (this.color_mode ===true){
+                particle_color = color(1,0,0,1);
+            }
+            this.color_mode = !this.color_mode;
         this.sim.append_spring_and_particle(
             this.particle_mass, 
             this.sim.particles[this.length - 1].position[0], 
@@ -77,7 +99,8 @@ export class Snake {
             this.spring_length
         );
 
-        this.renders.push(new ParticleShapeRender(this.sim.particles[this.sim.particles.length - 1]));
+        this.renders.push(new ParticleShapeRender({particle: this.sim.particles[this.sim.particles.length - 1],
+            particle_color: particle_color}));
         this.renders.push(new SpringShapeRender(this.sim.springs[this.sim.springs.length - 1]));
 
         this.length += 1;

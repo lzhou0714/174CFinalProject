@@ -46,10 +46,10 @@ const Part_three_chain_base = defs.Part_three_chain_base =
           rgb: { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) },
           flat: {shader: phong, ambient: 1, diffusivity: 0, specularity: 0, color: color(0, 0, 0, 1)},
           sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")},
-          ground: {shader: tex_ground, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/ground.png")}
+          ground: {shader: tex_ground, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/ground.png")},
 
         };
-        this.snake = new Snake(this);
+        this. snake = new Snake(this);
 
 
         this.turn_direction = vec3(1,0,0);
