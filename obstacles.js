@@ -14,7 +14,7 @@ class Obstacle {
         const sphere_shape = shapes.sphere;
 
         // torso node
-        const torso_transform = Mat4.scale(3, 3, 3); //wide, tall, thick
+        const torso_transform = Mat4.scale(1, 1, 1); //wide, tall, thick
         this.torso_node = new Node("torso", sphere_shape, torso_transform);
         // root->torso
         const root_location = Mat4.translation(x, 1, y); //side to side, up down, forward backward

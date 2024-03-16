@@ -32,7 +32,7 @@ export class ParticleShapeRender extends defs.Subdivision_Sphere {
         // console.log("particle", this.particle_object.position);
         // console.log("indexed",this.particle_object["particle"])
         this.radius = particle_radius;
-        this.material = { shader: new defs.Phong_Shader, ambient: 1, diffusivity: 0, specularity:  0, color: particle["particle_color"] }
+        this.material = { shader: new defs.Phong_Shader, ambient: 0.8, diffusivity: 0.18, specularity:  0.4, color: particle["particle_color"] }
     }
 
     draw(webgl_manager, uniforms) {
