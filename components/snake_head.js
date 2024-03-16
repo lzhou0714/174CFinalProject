@@ -9,11 +9,11 @@ const shapes = {
 };
 
 export class SnakeHead {
-    constructor(particle, game, material) {
+    constructor(particle, game, material, head_size) {
         this.particle = particle;
         this.game = game;
         this.material = material;
-        this.head_size = 1.3;
+        this.head_size = head_size;
         // 3. Model Human
         const sphere_shape = shapes.sphere;
 

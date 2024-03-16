@@ -14,6 +14,8 @@ export class Snake {
         this.spring_ks = 2500;
         this.spring_kd = 100;
         this.spring_length = 1.5;
+        this.particle_radius = 1;
+        this.particle_head_radius = 1.3;
 
         // Create simulation
         this.sim = new Simulation();
@@ -36,10 +38,10 @@ export class Snake {
             if (i === 0) {
                 // Copy the material used by ParticleShapeRender
                 const temp = new ParticleShapeRender(this.sim.particles[0]);
-                this.snake_head = new SnakeHead(this.sim.particles[0], this.game, temp.material);
+                this.snake_head = new SnakeHead(this.sim.particles[0], this.game, temp.material, this.particle_head_radius);
                 this.renders.push(this.snake_head);
             } else {
-                this.renders.push(new ParticleShapeRender(this.sim.particles[i]));
+                this.renders.push(new ParticleShapeRender(this.sim.particles[i], this.particle_radius));
             }
         }
         for (const spring of this.sim.springs) {
@@ -51,7 +53,6 @@ export class Snake {
         for (const render of this.renders) {
             render.draw(webgl_manager, uniforms);
         }
-        console.log(this.snake_head.theta);
     }
 
     advance_frame(time_step, head_position_delta) {
@@ -80,6 +81,25 @@ export class Snake {
         this.renders.push(new SpringShapeRender(this.sim.springs[this.sim.springs.length - 1]));
 
         this.length += 1;
+    }
+
+    is_overlapping_obstacle(obstacle) {
+        if (obstacle.position === null) {
+            return false;
+        }
+        for (let i = 0; i < this.sim.particles.length; i++) {
+            let snake_particle_radius = this.particle_radius
+            if (i === 0) {
+                snake_particle_radius = this.particle_head_radius;
+            } 
+
+            const snake_particle_pos = vec3(this.sim.particles[i].position[0], 1, this.sim.particles[i].position[2]);
+            const other_pos = vec3(obstacle.position[0], 1, obstacle.position[2]);
+            if (snake_particle_pos.minus(other_pos).norm() <= obstacle.radius + snake_particle_radius) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

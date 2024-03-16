@@ -2,81 +2,52 @@ import {tiny, defs} from './examples/common.js';
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
+const max_spawn_dist = 100;
 
-const shapes = {
-    'sphere': new defs.Subdivision_Sphere( 5 ),
-};
-
-export
-const Obstacle = 
-class Obstacle {
-    constructor(x, y) {
-        const sphere_shape = shapes.sphere;
-
-        // torso node
-        const torso_transform = Mat4.scale(3, 3, 3); //wide, tall, thick
-        this.torso_node = new Node("torso", sphere_shape, torso_transform);
-        // root->torso
-        const root_location = Mat4.translation(x, 1, y); //side to side, up down, forward backward
-        this.root = new Arc("root", null, this.torso_node, root_location);
+export class Collidable {
+    constructor(snake_position, radius = 1) {
+        const phong = new defs.Phong_Shader();
+        this.shapes = {'ball': new defs.Subdivision_Sphere(4)};
+        this.material_default = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) };
+        this.position = null;
+        this.radius = radius;
+        this.transform = null;
+        this.set_new_position(snake_position, radius);
     }
 
-    draw(webgl_manager, uniforms, material) {
-        this.matrix_stack = [];
-        this._rec_draw(this.root, Mat4.identity(), webgl_manager, uniforms, material);
+    set_new_position(snake_position, sphere_radius) {
+        this.position = vec3(
+            Math.floor((Math.random()-0.5)*max_spawn_dist) + snake_position[0], 
+            1, 
+            Math.floor((Math.random()-0.5)*max_spawn_dist) + snake_position[2]
+        );
+
+        this.transform = Mat4.translation(this.position[0], this.position[1], this.position[2])
+                            .times(Mat4.scale(sphere_radius, sphere_radius, sphere_radius));
+
+        // if (this.)
+            // If this position is too close to the snake, respawn
+
     }
 
-    _rec_draw(arc, matrix, webgl_manager, uniforms, material) {
-        if (arc !== null) {
-            const L = arc.location_matrix;
-            const A = arc.articulation_matrix;
-            matrix.post_multiply(L.times(A));
-            this.matrix_stack.push(matrix.copy());
-
-            const node = arc.child_node;
-            const T = node.transform_matrix;
-            matrix.post_multiply(T);
-            node.shape.draw(webgl_manager, uniforms, matrix, material);
-
-            matrix = this.matrix_stack.pop();
-            for (const next_arc of node.children_arcs) {
-                this.matrix_stack.push(matrix.copy());
-                this._rec_draw(next_arc, matrix, webgl_manager, uniforms, material);
-                matrix = this.matrix_stack.pop();
-            }
-        }
+    draw(webgl_manager, uniforms, material_override) {
+        this.shapes.ball.draw(webgl_manager, uniforms, this.transform ,material_override ?? this.material_default);
     }
 
-    debug(arc=null) {
-        if (arc === null)
-            arc = this.root;
-
-        if (arc !== this.root) {
-            arc.articulation_matrix = arc.articulation_matrix.times(Mat4.rotation(0.02, 0, 0, 1));
-        }
-
-        const node = arc.child_node;
-        for (const next_arc of node.children_arcs) {
-            this.debug(next_arc);
-        }
+    destroy_and_respawn(snake_position) {
+        this.set_new_position(snake_position, this.radius);
     }
 }
 
-class Node {
-    constructor(name, shape, transform) {
-        this.name = name;
-        this.shape = shape;
-        this.transform_matrix = transform;
-        this.children_arcs = [];
+export class Food extends Collidable{
+    do_something(snake) {
+        snake.add_segment();
+        this.destroy_and_respawn(snake.sim.particles[0].position);
     }
 }
 
-class Arc {
-    constructor(name, parent, child, location) {
-        this.name = name;
-        this.parent_node = parent;
-        this.child_node = child;
-        this.location_matrix = location;
-        this.articulation_matrix = Mat4.identity();
+export class Obstacle extends Collidable {
+    do_something(snake) {
+        // add code to game over
     }
 }

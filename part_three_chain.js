@@ -2,7 +2,7 @@ import {tiny, defs} from './examples/common.js';
 import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
 import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
-import { Obstacle } from './obstacles.js';
+import { Food } from './obstacles.js';
 
 
 // Pull these names into this module's scope for convenience:
@@ -59,12 +59,14 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.turn_speed = 1;
 
         this.obstacles = [];
-        const max_num = 50
-        const max_dist = 100; 
+        const max_num = 10;
+        const max_dist = 200; 
         for (let i = 0; i < max_num; i++){
-          this.obstacles[i] = new Obstacle(Math.floor((Math.random()-0.5)*max_dist), Math.floor((Math.random()-0.5)*max_dist));
+          this.obstacles[i] = new Food(vec3(0, 0, 0));
         }
+
         this.debug = false;
+        this.camera_isometric = true;
       }
 
       render_animation( caller )
@@ -157,20 +159,40 @@ export class Part_three_chain extends Part_three_chain_base
     this.current_direction = slerp(this.current_direction, this.turn_direction, 0.01);
 
     if (!this.debug){
-      Shader.assign_camera(
-        Mat4.look_at (
-          vec3( this.snake.sim.get_head_position()[0]
-          , 10, this.snake.sim.get_head_position()[2] - 35), 
-        vec3 (this.snake.sim.get_head_position()[0],
-          0, 
-          this.snake.sim.get_head_position()[2]), 
-        vec3 (0, 1, 0)), 
-        this.uniforms );
+      if (this.camera_isometric) {
+        Shader.assign_camera(
+          Mat4.look_at (
+            vec3( this.snake.sim.get_head_position()[0]
+            , 10, this.snake.sim.get_head_position()[2] - 35), 
+          vec3 (this.snake.sim.get_head_position()[0],
+            0, 
+            this.snake.sim.get_head_position()[2]), 
+          vec3 (0, 1, 0)), 
+          this.uniforms );
+      } else {
+        Shader.assign_camera(
+          Mat4.look_at (
+            vec3( this.snake.sim.get_head_position()[0]
+            , 50, this.snake.sim.get_head_position()[2]), 
+          vec3 (this.snake.sim.get_head_position()[0],
+            0, 
+            this.snake.sim.get_head_position()[2]), 
+          vec3 (0, 0, 1)), 
+          this.uniforms );
+      }
     }
 
     for (let i = 0; i < this.obstacles.length; i++){
-      this.obstacles[i].draw(caller, this.uniforms,{ ...this.materials.plastic, color: blue });
+      if (this.snake.is_overlapping_obstacle(this.obstacles[i])) {
+        this.obstacles[i].do_something(this.snake);
+        this.obstacles[i].destroy_and_respawn(this.snake.sim.particles[0].position); 
+      }
     }
+
+    for (const obstacle of this.obstacles) {
+      obstacle.draw(caller, this.uniforms, {...this.materials.plastic, color: blue});
+    }
+    
     this.snake.draw(caller, this.uniforms);
     this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));
   }
@@ -204,6 +226,8 @@ export class Part_three_chain extends Part_three_chain_base
     this.key_triggered_button("Add Segment", ["Enter"], () => {this.snake.add_segment();});
     this.new_line();
     this.key_triggered_button("Toggle Debug", ["b"], () => {this.debug = !this.debug;});
+    this.new_line();
+    this.key_triggered_button("Toggle Camera", ["c"], () => {this.camera_isometric = !this.camera_isometric;});
     this.new_line();
     this.addHoldKey(
 			'w', //move in z direction
