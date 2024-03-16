@@ -28,12 +28,15 @@ export class CurveShape extends Shape {
 export class ParticleShapeRender extends defs.Subdivision_Sphere {
     constructor(particle, particle_radius = 1, particle_color = color(1, 0, 0, 1)) {
         super(4);
-        this.particle_object = particle;
+        this.particle_object = particle["particle"];
+        // console.log("particle", this.particle_object.position);
+        // console.log("indexed",this.particle_object["particle"])
         this.radius = particle_radius;
-        this.material = { shader: new defs.Phong_Shader, ambient: .2, diffusivity: 1, specularity:  1, color: particle_color }
+        this.material = { shader: new defs.Phong_Shader, ambient: 1, diffusivity: 0, specularity:  0, color: particle["particle_color"] }
     }
 
     draw(webgl_manager, uniforms) {
+      console.log(this.particle_object.position);
         const particle_transform = Mat4.translation(this.particle_object.position[0], this.particle_object.position[1], this.particle_object.position[2])
           .times(Mat4.scale(this.radius, this.radius, this.radius));
         super.draw(webgl_manager, uniforms, particle_transform, this.material)
