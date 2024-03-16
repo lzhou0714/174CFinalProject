@@ -1,5 +1,5 @@
 import {tiny, defs} from './examples/common.js';
-
+import { Path } from './components/paths.js';
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 const max_spawn_dist = 100;
@@ -42,6 +42,27 @@ export class Collidable {
 export class Food extends Collidable{
     do_something(snake) {
         snake.add_segment();
+        this.destroy_and_respawn(snake.sim.particles[0].position);
+    }
+}
+
+export class Powerup extends Collidable {
+    constructor(snake_position, radius = 1.5){
+        super(snake_position, radius);
+        let id = Math.floor(Math.random() * 4);
+        console.log("id", id);
+        console.log("position", this.position);
+        this.spline = new Path(id, this.position[0], this.position[2]).spline;
+    }
+    update(dt, t){
+        let t_norm =(Math.cos(t*0.3) + 1)/2;
+        this.position = this.spline.get_position(t_norm);
+    }
+
+    do_something(snake) {
+        // snake.add_segment();
+
+        // add a powerup function
         this.destroy_and_respawn(snake.sim.particles[0].position);
     }
 }

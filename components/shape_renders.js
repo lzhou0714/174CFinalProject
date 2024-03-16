@@ -36,7 +36,7 @@ export class ParticleShapeRender extends defs.Subdivision_Sphere {
     }
 
     draw(webgl_manager, uniforms) {
-      console.log(this.particle_object.position);
+
         const particle_transform = Mat4.translation(this.particle_object.position[0], this.particle_object.position[1], this.particle_object.position[2])
           .times(Mat4.scale(this.radius, this.radius, this.radius));
         super.draw(webgl_manager, uniforms, particle_transform, this.material)

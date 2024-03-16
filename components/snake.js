@@ -37,19 +37,18 @@ export class Snake {
         this.renders = [];
         for (let i = 0; i < this.sim.particles.length; i++) {
             let particle_color  = color(1,1,1,1);
-            console.log(this.color_mode)
+
             if (this.color_mode ===true){
                 particle_color = color(1,0,0,1);
             }
             this.color_mode = !this.color_mode;
 
-            console.log(particle_color);
             if (i === 0) {
                 // Copy the material used by ParticleShapeRender
                 const temp = new ParticleShapeRender(
                     {particle: this.sim.particles[0], 
                     particle_color: color(1,0,0,1)});
-                console.log(temp.material)
+
                 this.snake_head = new SnakeHead(this.sim.particles[0], this.game, temp.material, this.particle_head_radius);
                 this.renders.push(this.snake_head);
             } else {
@@ -66,7 +65,6 @@ export class Snake {
     draw(webgl_manager, uniforms) {
 
         for (const render of this.renders) {
-            console.log(render);
             render.draw(webgl_manager, uniforms);
         }
     }
@@ -79,7 +77,6 @@ export class Snake {
     // Add a new segment to the snake
     add_segment() {
         let particle_color  = color(1,1,1,1);
-            console.log(this.color_mode)
             if (this.color_mode ===true){
                 particle_color = color(1,0,0,1);
             }
