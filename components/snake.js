@@ -116,6 +116,7 @@ export class Snake {
     }
 
     is_overlapping_obstacle(obstacle) {
+
         if (obstacle.position === null) {
             return false;
         }
@@ -126,6 +127,7 @@ export class Snake {
             } 
 
             const snake_particle_pos = vec3(this.sim.particles[i].position[0], 1, this.sim.particles[i].position[2]);
+
             const other_pos = vec3(obstacle.position[0], 1, obstacle.position[2]);
             if (snake_particle_pos.minus(other_pos).norm() <= obstacle.radius + snake_particle_radius) {
                 return true;

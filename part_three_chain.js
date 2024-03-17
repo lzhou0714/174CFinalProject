@@ -32,7 +32,10 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         // Don't define more than one blueprint for the same thing here.
         this.shapes = { 'box'  : new defs.Cube(),
           'ball' : new defs.Subdivision_Sphere( 4 ),
-          'axis' : new defs.Axis_Arrows() 
+          'axis' : new defs.Axis_Arrows(),
+          'food': new Shape_From_File('../assets/watermelon.obj'),
+          'obstacle': new Shape_From_File('../assets/potion.obj'),
+          'star': new Shape_From_File('../assets/star.obj')
         };
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -50,7 +53,9 @@ const Part_three_chain_base = defs.Part_three_chain_base =
           sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")},
           ground: {shader: tex_ground, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/ground.png")},
           obstacle: {shader: tex_phong, ambient: .95, diffusivity: .1, specularity: .1, texture: new Texture("../assets/potion_textures/PotionMagic_Color.png") },
-          food: {shader: tex_phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")}
+          food: {shader: tex_phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")},
+          plus_three: {shader: phong, ambient: .8, diffusivity: 1, specularity: .5, color: color( 0, 1, 0, 1 ) },
+          speed_up: {shader: phong, ambient: .8, diffusivity: 1, specularity: .5, color: color( 1, 0,1, 1 ) }
 
         };
         this.snake = new Snake(this);
@@ -70,16 +75,17 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         const num_powerups_speedup = 5;
         const num_powerups_plusthree = 5;
         for (let i = 0; i < num_food; i++){
-          this.obstacles[i] = new Food(vec3(0, 0, 0), this.materials.food);
+          this.obstacles[i] = new Food(vec3(0, 0, 0), 1,  this.materials.food, this.shapes.food);
         }
         for (let i = 0; i < num_obstacle; i++) {
-          this.obstacles.push(new Obstacle(vec3(0, 0, 0)))
+
+          this.obstacles.push(new Obstacle(vec3(0, 0, 0), 1, this.materials.obstacle, this.shapes.obstacle));
         }
         for (let i = 0; i < num_powerups_speedup; i++) {
-          this.obstacles.push(new Powerup_SpeedUp(vec3(0, 0, 0)));
+          this.obstacles.push(new Powerup_SpeedUp(vec3(0, 0, 0), this.shapes.star, this.materials.speed_up));
         }
         for (let i = 0; i < num_powerups_plusthree; i++) {
-          this.obstacles.push(new Powerup_PlusThree(vec3(0, 0, 0)));
+          this.obstacles.push(new Powerup_PlusThree(vec3(0, 0, 0), this.shapes.star, this.materials.plus_three));
         }
 
         this.debug = false;
@@ -163,9 +169,6 @@ export class Part_three_chain extends Part_three_chain_base
 
     if (this.game_over) {
       //delete all the obstacles
-      for (let i = 0; i < this.obstacles.length; i++){
-        delete this.obstacles[i]
-      }
       this.init();
     }
 
@@ -229,7 +232,7 @@ export class Part_three_chain extends Part_three_chain_base
 
   increase_difficulty(amt) {
     for (let i = 0; i < amt; i++) {
-      this.obstacles.push(new Obstacle(vec3(0, 0, 0)));
+      this.obstacles.push(new Obstacle(vec3(0, 0, 0), 1, this.materials.obstacle, this.shapes.obstacle));
     }
   }
 

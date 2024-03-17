@@ -9,12 +9,6 @@ const tex_phong = new defs.Textured_Phong();
 
 export class Collidable {
     constructor(snake_position, radius = 1) {
-        this.shapes = {
-            'ball': new defs.Subdivision_Sphere(4),
-            'food': new Shape_From_File('../assets/watermelon.obj'),
-            'obstacle': new Shape_From_File('../assets/potion.obj'),
-            'star': new Shape_From_File('../assets/star.obj')
-        };
         this.position = null;
         this.max_radius = radius;
         this.transform = null;
@@ -41,11 +35,6 @@ export class Collidable {
 
     }
 
-    draw(webgl_manager, uniforms) {
-        this.shapes.star.draw(webgl_manager, uniforms, this.transform.times(Mat4.translation(
-            0,1,0
-        )), this.material);
-    }
 
     update() {
         // called every frame
@@ -80,16 +69,16 @@ export class Collidable {
 }
 
 export class Food extends Collidable{
-    constructor(snake_position, radius = 1, material) {
+    constructor(snake_position, radius = 1, material, shape) {
         super(snake_position, radius);
+        this.shape = shape;
         this.food_material= material;
-        console.log(this.food_material);
     }
     draw(webgl_manager, uniforms) {
         this.transform = Mat4.translation(this.position[0], 2, this.position[2])
             .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
             .times(Mat4.scale(this.radius, this.radius, this.radius));
-        this.shapes.food.draw(webgl_manager, uniforms, this.transform , this.food_material);
+        this.shape.draw(webgl_manager, uniforms, this.transform , this.food_material);
     }
 
     do_something(snake) {
@@ -124,7 +113,6 @@ export class Powerup extends Collidable {
             }
         }
     }
-
     set_new_position(snake_position, sphere_radius, min_spawn_dist = 30) {
         super.set_new_position(snake_position, sphere_radius, min_spawn_dist + 30);
         this.permanent_position = this.position;
@@ -147,9 +135,10 @@ export class Powerup extends Collidable {
 }
 
 export class Powerup_SpeedUp extends Powerup {
-    constructor(snake_position) {
+    constructor(snake_position, shape, material) {
         super(snake_position);
-        this.material = { shader: phong, ambient: .8, diffusivity: 1, specularity: .5, color: color( 1, 0, 1, 1 ) };
+        this.shape = shape;
+        this.material = material;
     }
 
     do_something(snake) {
@@ -157,12 +146,18 @@ export class Powerup_SpeedUp extends Powerup {
         snake.game.player_velocity = 0.2;
         setTimeout(() => {snake.game.player_velocity = 0.1}, 2000);
     }
+    draw(webgl_manager, uniforms) {
+        this.shape.draw(webgl_manager, uniforms, this.transform.times(Mat4.translation(
+            0,1,0
+        )), this.material);
+    }
 }
 
 export class Powerup_PlusThree extends Powerup {
-    constructor(snake_position) {
+    constructor(snake_position, shape, material) {
         super(snake_position);
-        this.material = { shader: phong, ambient: .8, diffusivity: 1, specularity: .5, color: color( 0, 1, 0, 1 ) };
+        this.shape = shape;
+        this.material = material;
     }
 
     do_something(snake) {
@@ -171,18 +166,25 @@ export class Powerup_PlusThree extends Powerup {
         snake.add_segment();
         snake.add_segment();
     }
+    draw(webgl_manager, uniforms) {
+        this.shape.draw(webgl_manager, uniforms, this.transform.times(Mat4.translation(
+            0,1,0
+        )), this.material);
+    }
 }
 
 export class Obstacle extends Collidable {
-    constructor(snake_position, radius = 1) {
+    constructor(snake_position, radius = 1, material, shape) {
         super(snake_position, radius);
-        this.obstacle_material = { shader: tex_phong, ambient: .95, diffusivity: .1, specularity: .1, texture: new Texture("../assets/potion_textures/PotionMagic_Color.png") };
+        this.shape = shape;
+        this.obstacle_material = material;
     }
        draw(webgl_manager, uniforms) {
+
         this.transform = Mat4.translation(this.position[0], 3, this.position[2]).
             times(Mat4.rotation(-Math.PI/2, 0, 1, 0))
             .times(Mat4.scale(this.radius, this.radius, this.radius));
-        this.shapes.obstacle.draw(webgl_manager, uniforms, this.transform , this.obstacle_material);
+        this.shape.draw(webgl_manager, uniforms, this.transform , this.obstacle_material);
     }
 
 
