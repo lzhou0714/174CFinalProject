@@ -98,7 +98,7 @@ export class Food extends Collidable{
 }
 
 export class Powerup extends Collidable {
-    constructor(snake_position, radius = 1.5){
+    constructor(snake_position, radius = 1.2){
         super(snake_position, radius);
         let id = Math.floor(Math.random() * 4) + 1;
         this.spline = new Path(id).spline;

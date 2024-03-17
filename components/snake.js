@@ -77,6 +77,7 @@ export class Snake {
     // Add a new segment to the snake
     add_segment() {
         this.game.score += 1;
+        this.game.pass_score_to_dom();
         if (this.game.score === 2 || this.game.score === 6) {
             this.game.increase_difficulty(10);
         }

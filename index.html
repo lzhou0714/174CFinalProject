@@ -14,6 +14,54 @@ index.html - The web page document containing the canvas (drawing surface).  It 
         display: table;
         clear: both;
         }
+        .wrapper {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        }
+        .canvas-widget {
+        border: 0px solid azure;
+        box-shadow: 0 0  10px -5px black;
+        background-color: azure;
+        width: 1080px;
+        position: relative;
+        }
+        #gameover-overlay {
+        position: absolute;
+        width: 100%;
+        height: 600px;
+        backdrop-filter: blur(1.5px) grayscale(100%) brightness(65%);
+        display: none;
+        color: azure;
+        }
+        #gameover {
+            position: relative;
+            font-size: 80px;
+            color: azure;
+            text-shadow: 0 0 10px black;
+            text-align: center;
+            top: 25%;
+        }
+        #final-score {
+            position: relative;
+            font-size: 40px;
+            color: white;
+            text-shadow: 0 0 10px black;
+            text-align: center;
+            top: 30%;
+        }
+        #score-overlay {
+        position: absolute;
+        left: 40px;
+        top: 20px;
+        }
+        #score {
+            font-size: 40px;
+            color: black;
+            text-shadow: 0 0 10px white;
+            text-align: right;
+        }
     </style>
 
     <meta charset="UTF-8"/>
@@ -22,7 +70,17 @@ index.html - The web page document containing the canvas (drawing surface).  It 
     <title>WebGL</title></head>
 <body style="background: DarkGray">
 <!-- Begin typing your web page's text here. //-->
-
+    <div class="wrapper">
+        <div class="canvas-widget" id="main-canvas">
+            <div id="gameover-overlay">
+                <div id="gameover">GAME OVER</div>
+                <div id="final-score">Final Score: </div>
+            </div>
+            <div id="score-overlay">
+                <div id="score">0</div>
+            </div>
+        </div>
+    </div>
 
 <!-- The following code embeds a WebGL canvas panel powered by a tree of Components from tiny-graphics.  //-->
 <div id="main-section" class="document-builder"></div>
