@@ -77,8 +77,15 @@ export class Snake {
     // Add a new segment to the snake
     add_segment() {
         this.game.score += 1;
-        if (this.game.score === 3 || this.game.score === 5 || this.game.score === 7) {
-            this.game.increase_difficulty(7);
+        if (this.game.score === 2 || this.game.score === 6) {
+            this.game.increase_difficulty(10);
+        }
+        if (this.game.score === 10) {
+            this.game.increase_difficulty(15);
+        }
+        
+        if (this.game.score === 14) {
+            this.game.increase_difficulty(15);
         }
 
         let particle_color  = color(1,1,1,1);

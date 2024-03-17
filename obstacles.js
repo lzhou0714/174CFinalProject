@@ -9,9 +9,12 @@ export class Collidable {
     constructor(snake_position, radius = 1) {
         this.shapes = {'ball': new defs.Subdivision_Sphere(4)};
         this.position = null;
-        this.radius = radius;
+        this.max_radius = radius;
         this.transform = null;
-        this.set_new_position(snake_position, radius, 10);
+        this.set_new_position(snake_position, radius);
+        
+        this.radius = 0;
+        this.radius_t = 0;
     }
 
     set_new_position(snake_position, sphere_radius, min_spawn_dist = 30) {
@@ -37,10 +40,26 @@ export class Collidable {
 
     update() {
         // called every frame
+        if (this.radius_t < 1) {
+            this.radius_t += 0.02;
+            this.radius = this.ease_in_ease_out(this.radius_t) * this.max_radius;
+            this.transform = Mat4.translation(this.position[0], this.position[1], this.position[2])
+            .times(Mat4.scale(this.radius, this.radius, this.radius));
+        }
+    }
+
+    ease_in_ease_out(t) {
+        if (t < 0.5) {
+            return 2.5 * t * t;
+        } else {
+            return (2.5 * ((t - 0.5) * 1.6) * (1 - ((t - 0.5) * 1.6)) + 0.42) * 1.2;
+        }
     }
 
     destroy_and_respawn(snake_position) {
         this.set_new_position(snake_position, this.radius);
+        this.radius_t = 0;
+        this.radius = 0;
     }
 
     check_out_of_range(snake) {
@@ -73,6 +92,7 @@ export class Powerup extends Collidable {
         this.material = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 1, 1, 0, 1 ) };
     }
     update(freeze_powerups = false){
+        super.update();
         let t_norm =(Math.cos(this.t*0.3) + 1)/2;
         this.position = this.spline.get_position(t_norm).plus(this.permanent_position);
         this.transform = Mat4.translation(this.position[0], this.position[1], this.position[2])
@@ -103,7 +123,7 @@ export class Powerup extends Collidable {
     }
     
     destroy_and_respawn(snake_position) {
-        this.set_new_position(snake_position, this.radius);
+        super.destroy_and_respawn(snake_position)
         let id = Math.floor(Math.random() * 4) + 1;
         this.spline = new Path(id).spline;
         this.t = Math.random() * 100;
