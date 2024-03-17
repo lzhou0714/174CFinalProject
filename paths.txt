@@ -8,3 +8,25 @@ add point 28.0 1.0 -4.0 -6.0 0.0 -100.0
 add point 36.0 1.0 4.0 6.0 0.0 100.0
 add point 42.0 1.0 -4.0 -6.0 0.0 -100.0
 add point 50.0 1.0 4.0 6.0 0.0 100.0
+
+
+export class Obstacle extends Collidable {
+    constructor(snake_position, radius = 1) {
+        super(snake_position, radius);
+    }
+    //     this.materials = { 
+    //         color: {texture_phong, ambient: .95, diffusivity: .1, specularity: .1, texture: new Texture("./assets/potion_textures/PotionMagic_Color.png")},
+    //         metal: {texture_phong, ambient: .95, diffusivity: .1, specularity: .1, texture: new Texture("./assets/potion_textures/PotionMagic_Metal.png")},
+
+    //     };
+    // }
+    // draw(webgl_manager, uniforms) {
+    //     this.transform = Mat4.translation(this.position[0], 2, this.position[2]) 
+    //         .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+    //     this.shapes.obstacle.draw(webgl_manager, uniforms, this.transform , this.materials.color);
+    // }
+
+    do_something(snake) {
+        snake.game.game_over = true;
+    }
+} 

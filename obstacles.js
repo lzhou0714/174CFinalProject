@@ -5,12 +5,14 @@ const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } =
 import { Shape_From_File } from '../examples/obj-file-demo.js';
 export const max_spawn_dist = 100;
 const phong = new defs.Phong_Shader();
+const tex_phong = new defs.Textured_Phong();
 
 export class Collidable {
     constructor(snake_position, radius = 1) {
         this.shapes = {
             'ball': new defs.Subdivision_Sphere(4),
-            'food': new Shape_From_File('../assets/watermelon.obj')
+            'food': new Shape_From_File('../assets/watermelon.obj'),
+            'obstacle': new Shape_From_File('../assets/potion.obj')
         };
         this.position = null;
         this.radius = radius;
@@ -150,8 +152,14 @@ export class Powerup_PlusThree extends Powerup {
 export class Obstacle extends Collidable {
     constructor(snake_position, radius = 1) {
         super(snake_position, radius);
-        this.material = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 1, 0, 0, 1 ) };
+        this.obstacle_material = { shader: tex_phong, ambient: .95, diffusivity: .1, specularity: .1, texture: new Texture("../assets/potion_textures/PotionMagic_Color.png") };
     }
+       draw(webgl_manager, uniforms) {
+        this.transform = Mat4.translation(this.position[0], 2, this.position[2]) 
+            .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+        this.shapes.obstacle.draw(webgl_manager, uniforms, this.transform , this.obstacle_material);
+    }
+
 
     do_something(snake) {
         snake.game.game_over = true;
