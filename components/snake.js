@@ -78,14 +78,7 @@ export class Snake {
     add_segment() {
         this.game.score += 1;
         this.game.pass_score_to_dom();
-        if (this.game.score === 2 || this.game.score === 6) {
-            this.game.increase_difficulty(10);
-        }
-        if (this.game.score === 10) {
-            this.game.increase_difficulty(15);
-        }
-        
-        if (this.game.score === 14) {
+        if ((this.game.score - 2) % 4 === 0 && this.game.score < 15) {
             this.game.increase_difficulty(15);
         }
 
