@@ -12,7 +12,8 @@ export class Collidable {
         this.shapes = {
             'ball': new defs.Subdivision_Sphere(4),
             'food': new Shape_From_File('../assets/watermelon.obj'),
-            'obstacle': new Shape_From_File('../assets/potion.obj')
+            'obstacle': new Shape_From_File('../assets/potion.obj'),
+            'star': new Shape_From_File('../assets/star.obj')
         };
         this.position = null;
         this.radius = radius;
@@ -38,7 +39,9 @@ export class Collidable {
     }
 
     draw(webgl_manager, uniforms) {
-        this.shapes.ball.draw(webgl_manager, uniforms, this.transform , this.material);
+        this.shapes.star.draw(webgl_manager, uniforms, this.transform.times(Mat4.translation(
+            0,1,0
+        )), this.material);
     }
 
     update() {
@@ -61,12 +64,12 @@ export class Food extends Collidable{
     constructor(snake_position, radius = 1) {
         super(snake_position, radius);
 
-        this.material = {shader: new defs.Textured_Phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")}
+        this.food_material = {shader: tex_phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")}
     }
     draw(webgl_manager, uniforms) {
         this.transform = Mat4.translation(this.position[0], 2, this.position[2])
             .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
-        this.shapes.food.draw(webgl_manager, uniforms, this.transform , this.material);
+        this.shapes.food.draw(webgl_manager, uniforms, this.transform , this.food_material);
     }
 
     do_something(snake) {
@@ -125,7 +128,7 @@ export class Powerup extends Collidable {
 export class Powerup_SpeedUp extends Powerup {
     constructor(snake_position) {
         super(snake_position);
-        this.material = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 1, 0, 1, 1 ) };
+        this.material = { shader: phong, ambient: .8, diffusivity: 1, specularity: .5, color: color( 1, 0, 1, 1 ) };
     }
 
     do_something(snake) {
@@ -138,7 +141,7 @@ export class Powerup_SpeedUp extends Powerup {
 export class Powerup_PlusThree extends Powerup {
     constructor(snake_position) {
         super(snake_position);
-        this.material = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 0, 1, 0, 1 ) };
+        this.material = { shader: phong, ambient: .8, diffusivity: 1, specularity: .5, color: color( 0, 1, 0, 1 ) };
     }
 
     do_something(snake) {
@@ -155,8 +158,8 @@ export class Obstacle extends Collidable {
         this.obstacle_material = { shader: tex_phong, ambient: .95, diffusivity: .1, specularity: .1, texture: new Texture("../assets/potion_textures/PotionMagic_Color.png") };
     }
        draw(webgl_manager, uniforms) {
-        this.transform = Mat4.translation(this.position[0], 2, this.position[2]) 
-            .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+        this.transform = Mat4.translation(this.position[0], 3, this.position[2]).
+            times(Mat4.rotation(-Math.PI/2, 0, 1, 0));
         this.shapes.obstacle.draw(webgl_manager, uniforms, this.transform , this.obstacle_material);
     }
 
