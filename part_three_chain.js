@@ -3,6 +3,7 @@ import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
 import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
 import { Food, Obstacle, Powerup, max_spawn_dist } from './obstacles.js';
+import { Shape_From_File } from '../examples/obj-file-demo.js';
 
 
 // Pull these names into this module's scope for convenience:
@@ -31,7 +32,11 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         // Don't define more than one blueprint for the same thing here.
         this.shapes = { 'box'  : new defs.Cube(),
           'ball' : new defs.Subdivision_Sphere( 4 ),
-          'axis' : new defs.Axis_Arrows() };
+          'axis' : new defs.Axis_Arrows(),
+          
+          'food': new Shape_From_File('../assets/watermelon.obj'),
+ 
+        };
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
         // that a Shader queries to light/color it properly.  Here we use a Phong shader.
@@ -47,6 +52,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
           flat: {shader: phong, ambient: 1, diffusivity: 0, specularity: 0, color: color(0, 0, 0, 1)},
           sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")},
           ground: {shader: tex_ground, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/ground.png")},
+          food: {shader: tex_phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")},
 
         };
         this. snake = new Snake(this);
@@ -172,7 +178,7 @@ export class Part_three_chain extends Part_three_chain_base
     //draw sky box
     let sky_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 1000, 1000));
     this.shapes.ball.draw( caller, this.uniforms, sky_transform, { ...this.materials.sky} );
-    
+    this.shapes.food.draw( caller, this.uniforms, Mat4.translation(0,3,0), { ...this.materials.food} );
     this.current_direction = slerp(this.current_direction, this.turn_direction, 0.01);
 
 
