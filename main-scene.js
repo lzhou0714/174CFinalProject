@@ -28,7 +28,7 @@ import {Text_Demo}
 import {Transforms_Sandbox_Base, Transforms_Sandbox}
     from "./examples/transforms-sandbox.js";
 
-import {Part_three_chain} from "./part_three_chain.js";
+import {Part_three_chain} from "./main.js";
 
 Object.assign (defs,
     {Minimal_Webgl_Demo},
