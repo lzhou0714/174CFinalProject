@@ -157,6 +157,22 @@ export class Part_three_chain extends Part_three_chain_base
     // caller:  Wraps the WebGL rendering context shown onscreen.  Pass to draw().
 
     // Call the setup code that we left inside the base class:
+    if (this.game_over) {
+      //delete all the obstacles
+      // this.snake = new Snake(this);
+      let gameover_div = document.querySelector("#gameover-overlay");
+      gameover_div.style.display = "block";
+      let score_value = document.querySelector("#final-score");
+      if (score_value) {
+          score_value.innerHTML = "Final Score: " + this.score;
+      }
+      let score_overlay = document.querySelector("#score-overlay");
+      if (score_overlay) {
+          score_overlay.innerHTML = "";
+      }
+      return;
+    }
+
     super.render_animation( caller );
 
     /**********************************
@@ -166,11 +182,6 @@ export class Part_three_chain extends Part_three_chain_base
         // replace them with your own!  Notice the usage of the Mat4 functions
         // translation(), scale(), and rotation() to generate matrices, and the
         // function times(), which generates products of matrices.
-
-    if (this.game_over) {
-      //delete all the obstacles
-      this.init();
-    }
 
     const t = this.t = this.uniforms.animation_time/1000;
 
@@ -259,11 +270,16 @@ export class Part_three_chain extends Part_three_chain_base
 		}, interval);
 	}
 
+  pass_score_to_dom() {
+    let score_value = document.querySelector("#score");
+    if (score_value) {
+        score_value.innerHTML = this.score;
+    }
+  }
+
   render_controls()
   {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
     // buttons with key bindings for affecting this scene, and live info readouts.
-    this.key_triggered_button("Add Segment", ["Enter"], () => {this.snake.add_segment();});
-    this.new_line();
     this.key_triggered_button("Toggle Debug", ["b"], () => {this.debug = !this.debug;});
     this.new_line();
     this.key_triggered_button("Toggle Camera", ["c"], () => {this.camera_isometric = !this.camera_isometric;});
@@ -357,3 +373,4 @@ export function slerp(startVector, endVector, t) {
 
   return interpolatedVector;
 }
+
