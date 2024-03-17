@@ -18,7 +18,7 @@ export class Collidable {
         this.position = null;
         this.max_radius = radius;
         this.transform = null;
-        this.set_new_position(snake_position, radius);
+        this.set_new_position(snake_position, this.radius);
         
         this.radius = 0;
         this.radius_t = 0;
@@ -87,7 +87,8 @@ export class Food extends Collidable{
     }
     draw(webgl_manager, uniforms) {
         this.transform = Mat4.translation(this.position[0], 2, this.position[2])
-            .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+            .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
+            .times(Mat4.scale(this.radius, this.radius, this.radius));
         this.shapes.food.draw(webgl_manager, uniforms, this.transform , this.food_material);
     }
 
@@ -179,7 +180,8 @@ export class Obstacle extends Collidable {
     }
        draw(webgl_manager, uniforms) {
         this.transform = Mat4.translation(this.position[0], 3, this.position[2]).
-            times(Mat4.rotation(-Math.PI/2, 0, 1, 0));
+            times(Mat4.rotation(-Math.PI/2, 0, 1, 0))
+            .times(Mat4.scale(this.radius, this.radius, this.radius));
         this.shapes.obstacle.draw(webgl_manager, uniforms, this.transform , this.obstacle_material);
     }
 
