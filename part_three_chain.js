@@ -160,6 +160,10 @@ export class Part_three_chain extends Part_three_chain_base
         // function times(), which generates products of matrices.
 
     if (this.game_over) {
+      //delete all the obstacles
+      for (let i = 0; i < this.obstacles.length; i++){
+        delete this.obstacles[i]
+      }
       this.init();
     }
 

@@ -1,7 +1,6 @@
 *.gif
 *.ico
 *.jpg
-*.obj
 *.bat
 *.command
 .vscode/*
