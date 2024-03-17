@@ -2,7 +2,7 @@ import {tiny, defs} from './examples/common.js';
 import { HermiteSpline, SAMPLE_COUNT } from './components/hermite_spline.js';
 import { CurveShape} from './components/shape_renders.js';
 import { Snake } from './components/snake.js';
-import { Food, Obstacle, Powerup, max_spawn_dist } from './obstacles.js';
+import { Food, Obstacle, Powerup_PlusThree, Powerup_SpeedUp, max_spawn_dist } from './obstacles.js';
 
 
 // Pull these names into this module's scope for convenience:
@@ -49,7 +49,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
           ground: {shader: tex_ground, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/ground.png")},
 
         };
-        this. snake = new Snake(this);
+        this.snake = new Snake(this);
         this.t_step = 1/1000;
 
 
@@ -58,30 +58,30 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         this.current_direction = vec3(1,0,0);
         this.keyListeners = {};
         this.turn_speed = 1;
+        this.score = 0;
 
         this.obstacles = [];
-        const num_food = 15;
-        const num_obstacle = 10
+        const num_food = 10;
+        const num_obstacle = 10;
+        const num_powerups_speedup = 5;
+        const num_powerups_plusthree = 5;
         for (let i = 0; i < num_food; i++){
           this.obstacles[i] = new Food(vec3(0, 0, 0));
         }
         for (let i = 0; i < num_obstacle; i++) {
           this.obstacles.push(new Obstacle(vec3(0, 0, 0)))
         }
-//         this.Powerups = [];
-//         const num_powerups = 5;
-//         const max_num = 10;
-//         const max_dist = 200; 
-//         for (let i = 0; i < max_num; i++){
-//           this.obstacles[i] = new Food(vec3(0, 0, 0));
-//         }
-//         for (let i = 0; i < num_powerups; i++){
-//           this.Powerups[i] = new Powerup(vec3(0, 0, 0));
-//         }
+        for (let i = 0; i < num_powerups_speedup; i++) {
+          this.obstacles.push(new Powerup_SpeedUp(vec3(0, 0, 0)));
+        }
+        for (let i = 0; i < num_powerups_plusthree; i++) {
+          this.obstacles.push(new Powerup_PlusThree(vec3(0, 0, 0)));
+        }
 
         this.debug = false;
         this.camera_isometric = true;
         this.game_over = false;
+        this.freeze_powerups = false;
       }
 
       render_animation( caller )
@@ -206,19 +206,23 @@ export class Part_three_chain extends Part_three_chain_base
         this.obstacles[i].destroy_and_respawn(this.snake.sim.particles[0].position); 
       }
 
-      if (this.snake.sim.particles[0].position.minus(this.obstacles[i].position).norm() > max_spawn_dist) {
-        this.obstacles[i].destroy_and_respawn(this.snake.sim.particles[0].position);
-      }
+      this.obstacles[i].check_out_of_range(this.snake);
+
+      this.obstacles[i].update(this.freeze_powerups);
     }
 
     for (const obstacle of this.obstacles) {
       obstacle.draw(caller, this.uniforms);
     }
-    // for (const powerup of this.Powerups) {
-    //   powerup.update(this.t_step, t);
-    // }
     this.snake.draw(caller, this.uniforms);
     this.snake.advance_frame(this.snake.sim.time_step, vec3(this.player_velocity * this.current_direction[0], 0, this.player_velocity * this.current_direction[2]));
+
+  }
+
+  increase_difficulty(amt) {
+    for (let i = 0; i < amt; i++) {
+      this.obstacles.push(new Obstacle(vec3(0, 0, 0)));
+    }
   }
 
   addHoldKey(key, callback, name, interval = 500) {
@@ -252,6 +256,8 @@ export class Part_three_chain extends Part_three_chain_base
     this.key_triggered_button("Toggle Debug", ["b"], () => {this.debug = !this.debug;});
     this.new_line();
     this.key_triggered_button("Toggle Camera", ["c"], () => {this.camera_isometric = !this.camera_isometric;});
+    this.new_line();
+    this.key_triggered_button("Toggle Freeze Powerups", ["f"], () => {this.freeze_powerups = !this.freeze_powerups;});
     this.new_line();
     this.addHoldKey(
 			'w', //move in z direction

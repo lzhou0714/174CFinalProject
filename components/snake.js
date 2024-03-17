@@ -76,6 +76,11 @@ export class Snake {
 
     // Add a new segment to the snake
     add_segment() {
+        this.game.score += 1;
+        if (this.game.score === 3 || this.game.score === 5 || this.game.score === 7) {
+            this.game.increase_difficulty(7);
+        }
+
         let particle_color  = color(1,1,1,1);
             if (this.color_mode ===true){
                 particle_color = color(1,0,0,1);
@@ -84,8 +89,8 @@ export class Snake {
         this.sim.append_spring_and_particle(
             this.particle_mass, 
             this.sim.particles[this.length - 1].position[0], 
-            this.sim.particles[this.length - 1].position[1] + 2, 
-            this.sim.particles[this.length - 1].position[2], 
+            2, 
+            this.sim.particles[this.length - 1].position[2] + 1, 
             0, 
             0, 
             0, 
