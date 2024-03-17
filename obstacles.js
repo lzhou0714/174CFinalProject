@@ -3,11 +3,15 @@ import { Path } from './components/paths.js';
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 export const max_spawn_dist = 75;
+import { Shape_From_File } from '../examples/obj-file-demo.js';
 const phong = new defs.Phong_Shader();
 
 export class Collidable {
     constructor(snake_position, radius = 1) {
-        this.shapes = {'ball': new defs.Subdivision_Sphere(4)};
+        this.shapes = {
+            'ball': new defs.Subdivision_Sphere(4),
+            'food': new Shape_From_File('../assets/watermelon.obj')
+        };
         this.position = null;
         this.radius = radius;
         this.transform = null;
@@ -43,7 +47,13 @@ export class Collidable {
 export class Food extends Collidable{
     constructor(snake_position, radius = 1) {
         super(snake_position, radius);
-        this.material = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 0, 0, 1, 1 ) };
+
+        this.material = {shader: new defs.Textured_Phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")}
+    }
+    draw(webgl_manager, uniforms) {
+        this.transform = Mat4.translation(this.position[0], 2, this.position[2])
+            .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+        this.shapes.food.draw(webgl_manager, uniforms, this.transform , this.material);
     }
 
     do_something(snake) {
