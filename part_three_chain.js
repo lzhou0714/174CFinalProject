@@ -173,6 +173,22 @@ export class Part_three_chain extends Part_three_chain_base
       return;
     }
 
+    if (this.score >= 15) {
+      let gameover_div = document.querySelector("#gameover-overlay");
+      gameover_div.style.display = "block";
+      let gameover_text = document.querySelector("#gameover");
+      gameover_text.innerHTML = "You Win!"
+      let score_value = document.querySelector("#final-score");
+      if (score_value) {
+        score_value.innerHTML = "Final Score: " + this.score;
+      }
+      let score_overlay = document.querySelector("#score-overlay");
+      if (score_overlay) {
+          score_overlay.innerHTML = "";
+      }
+      return;
+    }
+
     super.render_animation( caller );
 
     /**********************************
