@@ -49,6 +49,8 @@ const Part_three_chain_base = defs.Part_three_chain_base =
           flat: {shader: phong, ambient: 1, diffusivity: 0, specularity: 0, color: color(0, 0, 0, 1)},
           sky: {shader: tex_phong, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/sky.png")},
           ground: {shader: tex_ground, ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("./assets/ground.png")},
+          obstacle: {shader: tex_phong, ambient: .95, diffusivity: .1, specularity: .1, texture: new Texture("../assets/potion_textures/PotionMagic_Color.png") },
+          food: {shader: tex_phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")}
 
         };
         this.snake = new Snake(this);
@@ -68,7 +70,7 @@ const Part_three_chain_base = defs.Part_three_chain_base =
         const num_powerups_speedup = 5;
         const num_powerups_plusthree = 5;
         for (let i = 0; i < num_food; i++){
-          this.obstacles[i] = new Food(vec3(0, 0, 0));
+          this.obstacles[i] = new Food(vec3(0, 0, 0), this.materials.food);
         }
         for (let i = 0; i < num_obstacle; i++) {
           this.obstacles.push(new Obstacle(vec3(0, 0, 0)))

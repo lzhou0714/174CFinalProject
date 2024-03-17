@@ -61,10 +61,10 @@ export class Collidable {
 }
 
 export class Food extends Collidable{
-    constructor(snake_position, radius = 1) {
+    constructor(snake_position, radius = 1, material) {
         super(snake_position, radius);
-
-        this.food_material = {shader: tex_phong, ambient: 1, diffusivity: .1, specularity: .1, texture: new Texture("./assets/watermelon.png")}
+        this.food_material= material;
+        console.log(this.food_material);
     }
     draw(webgl_manager, uniforms) {
         this.transform = Mat4.translation(this.position[0], 2, this.position[2])
